@@ -176,26 +176,34 @@ app.get('/gang-money', async (req, res) => {
     let allSubmissions = [];
 
     if (isOfficerOrLeader) {
-      const docs = await User.find({}).sort({ 'gangMoney.updatedAt': -1 });
+      const docs = await User.find({});
 
-      // แปลงวันที่เป็น รูปแบบไทย (วัน/เดือน/ปี พ.ศ. เวลา)
-      allSubmissions = docs.map(doc => {
-        const m = doc.toObject();
-        if (m.gangMoney && m.gangMoney.updatedAt) {
-          const dateObj = new Date(m.gangMoney.updatedAt);
-          m.gangMoney.formattedDate = dateObj.toLocaleDateString('th-TH', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            timeZone: 'Asia/Bangkok'
-          });
-        } else {
-          m.gangMoney = { ...(m.gangMoney || {}), formattedDate: '-' };
-        }
-        return m;
-      });
+      allSubmissions = docs
+        .sort((a, b) => {
+          const dateA = a.gangMoney?.updatedAt ? new Date(a.gangMoney.updatedAt).getTime() : 0;
+          const dateB = b.gangMoney?.updatedAt ? new Date(b.gangMoney.updatedAt).getTime() : 0;
+          return dateB - dateA;
+        })
+        .map(doc => {
+          const m = { ...doc };
+          if (m.gangMoney && m.gangMoney.updatedAt) {
+            const dateObj = new Date(m.gangMoney.updatedAt);
+            m.gangMoney = {
+              ...m.gangMoney,
+              formattedDate: dateObj.toLocaleDateString('th-TH', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                timeZone: 'Asia/Bangkok'
+              })
+            };
+          } else {
+            m.gangMoney = { ...(m.gangMoney || {}), formattedDate: '-' };
+          }
+          return m;
+        });
     }
 
     res.render('gang-money', {
@@ -253,7 +261,8 @@ app.post('/gang-money/verify/:id', async (req, res) => {
           action: 'deposit',
           performedBy: `${targetUser.displayName || targetUser.username} (ผ่านการอนุมัติโดย ${req.user.displayName || req.user.username})`,
           amount: amount,
-          reason: 'ส่งเงินแก๊งรายสัปดาห์'
+          reason: 'ส่งเงินแก๊งรายสัปดาห์',
+          createdAt: new Date().toISOString()
         });
         await treasury.save();
       }
@@ -277,7 +286,7 @@ app.get('/gang-treasury', async (req, res) => {
     const treasury = await getOrCreateTreasury();
 
     const formattedLogs = treasury.logs.map(log => {
-      const l = log.toObject();
+      const l = { ...log };
       l.formattedDate = new Date(l.createdAt).toLocaleDateString('th-TH', {
         year: 'numeric', month: 'short', day: 'numeric',
         hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok'
@@ -322,7 +331,8 @@ app.post('/gang-treasury/withdraw', async (req, res) => {
       action: 'withdraw',
       performedBy: req.user.displayName || req.user.username,
       amount: withdrawAmount,
-      reason: reason || 'เบิกเงินกองกลาง'
+      reason: reason || 'เบิกเงินกองกลาง',
+      createdAt: new Date().toISOString()
     });
 
     await treasury.save();
@@ -350,7 +360,8 @@ app.post('/gang-treasury/adjust', async (req, res) => {
           action: 'manual_adjust',
           performedBy: req.user.displayName || req.user.username,
           amount: adjustAmount,
-          reason: `[ปรับเพิ่ม] ${reason || 'ปรับสมดุลบัญชี'}`
+          reason: `[ปรับเพิ่ม] ${reason || 'ปรับสมดุลบัญชี'}`,
+          createdAt: new Date().toISOString()
         });
       } else if (type === 'subtract') {
         treasury.balance = Math.max(0, treasury.balance - adjustAmount);
@@ -358,7 +369,8 @@ app.post('/gang-treasury/adjust', async (req, res) => {
           action: 'manual_adjust',
           performedBy: req.user.displayName || req.user.username,
           amount: -adjustAmount,
-          reason: `[ปรับลด] ${reason || 'ปรับสมดุลบัญชี'}`
+          reason: `[ปรับลด] ${reason || 'ปรับสมดุลบัญชี'}`,
+          createdAt: new Date().toISOString()
         });
       }
 

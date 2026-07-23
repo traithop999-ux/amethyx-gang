@@ -1,5 +1,15 @@
 const { readDatabase, writeDatabase } = require('../db/json');
 
+function toIsoString(value) {
+  if (!value) return new Date().toISOString();
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'string') {
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? new Date().toISOString() : parsed.toISOString();
+  }
+  return new Date(value).toISOString();
+}
+
 function normalizeTreasuryRow(row) {
   if (!row) return null;
 
@@ -9,7 +19,7 @@ function normalizeTreasuryRow(row) {
     logs: Array.isArray(row.logs) ? row.logs.map(log => ({
       ...log,
       amount: Number(log.amount || 0),
-      createdAt: log.createdAt ? new Date(log.createdAt) : new Date()
+      createdAt: toIsoString(log.createdAt)
     })) : [],
     async save() {
       const data = readDatabase();
@@ -20,7 +30,7 @@ function normalizeTreasuryRow(row) {
         logs: Array.isArray(this.logs) ? this.logs.map(log => ({
           ...log,
           amount: Number(log.amount || 0),
-          createdAt: (log.createdAt || new Date()).toISOString()
+          createdAt: toIsoString(log.createdAt)
         })) : []
       };
       writeDatabase(data);

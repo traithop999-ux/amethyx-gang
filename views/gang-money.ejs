@@ -219,11 +219,11 @@
                   </td>
                   <td>
                     <div class="action-btns">
-                      <form action="/gang-money/verify/<%= m._id %>" method="POST">
+                      <form action="/gang-money/verify/<%= m.id %>" method="POST">
                         <input type="hidden" name="status" value="approved">
                         <button type="submit" class="btn-approve" title="อนุมัติ"><i class="fa-solid fa-check"></i> ผ่าน</button>
                       </form>
-                      <form action="/gang-money/verify/<%= m._id %>" method="POST">
+                      <form action="/gang-money/verify/<%= m.id %>" method="POST">
                         <input type="hidden" name="status" value="rejected">
                         <button type="submit" class="btn-reject" title="ปฏิเสธ"><i class="fa-solid fa-xmark"></i> ไม่ผ่าน</button>
                       </form>
