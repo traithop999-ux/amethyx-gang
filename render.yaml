@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: amethyx-gang
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DISCORD_CLIENT_ID
+        sync: false
+      - key: DISCORD_CLIENT_SECRET
+        sync: false
+      - key: DISCORD_CALLBACK_URL
+        value: https://amethyx-gang.onrender.com/auth/discord/callback
