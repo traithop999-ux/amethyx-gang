@@ -138,10 +138,7 @@ app.get('/members', async (req, res) => {
   }
 });
 
-app.get('/auth/discord', (req, res, next) => {
-  const callbackURL = process.env.DISCORD_CALLBACK_URL || `https://${req.get('host')}/auth/discord/callback`;
-  passport.authenticate('discord', { callbackURL })(req, res, next);
-});
+app.get('/auth/discord', passport.authenticate('discord'));
 app.get('/auth/discord/callback', passport.authenticate('discord', {
   failureRedirect: '/'
 }), (req, res) => {
