@@ -30,13 +30,15 @@ app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
 app.use(session({
   secret: process.env.SESSION_SECRET || 'amethyx-session-secret',
-  resave: false,
-  saveUninitialized: false,
+  resave: true,
+  saveUninitialized: true,
   proxy: true,
+  rolling: true,
   cookie: {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax'
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 1000 * 60 * 60 * 24 * 7
   }
 }));
 
@@ -135,31 +137,13 @@ app.get('/members', async (req, res) => {
   }
 });
 
-app.get('/auth/discord', passport.authenticate('discord'));
-app.get('/auth/discord/callback', (req, res, next) => {
-  passport.authenticate('discord', {
-    failureRedirect: '/'
-  }, (err, user, info) => {
-    if (err) {
-      console.error('Discord authentication error:', err);
-      return res.redirect('/?error=discord');
-    }
-
-    if (!user) {
-      console.warn('Discord authentication failed:', info);
-      return res.redirect('/');
-    }
-
-    req.logIn(user, (loginErr) => {
-      if (loginErr) {
-        console.error('Discord session login error:', loginErr);
-        return res.redirect('/?error=session');
-      }
-
-      return res.redirect('/members');
-    });
-  })(req, res, next);
-});
+app.get('/auth/discord', passport.authenticate('discord', {
+  scope: ['identify']
+}));
+app.get('/auth/discord/callback', passport.authenticate('discord', {
+  failureRedirect: '/?error=discord',
+  successRedirect: '/members'
+}));
 
 // Profile Page
 app.get('/profile', (req, res) => {
