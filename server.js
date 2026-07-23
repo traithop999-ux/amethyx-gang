@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
+const FileStore = require('session-file-store')(session);
 const passport = require('passport');
 const DiscordStrategy = require('passport-discord').Strategy;
 const multer = require('multer');
@@ -28,12 +29,19 @@ async function getOrCreateTreasury() {
 // View Engine & Middleware
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
+const sessionStore = new FileStore({
+  path: path.join(__dirname, 'sessions'),
+  ttl: 86400,
+  retries: 5,
+  logFn: () => {}
+});
 app.use(session({
   secret: process.env.SESSION_SECRET || 'amethyx-session-secret',
   resave: true,
   saveUninitialized: true,
   proxy: true,
   rolling: true,
+  store: sessionStore,
   cookie: {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
