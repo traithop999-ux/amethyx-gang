@@ -105,9 +105,6 @@ app.use(express.static('public'));
 
 // Routes
 app.get('/', (req, res) => {
-  if (req.isAuthenticated()) {
-    return res.redirect('/members');
-  }
   res.render('index');
 });
 
@@ -142,7 +139,7 @@ app.get('/auth/discord', passport.authenticate('discord', {
 }));
 app.get('/auth/discord/callback', passport.authenticate('discord', {
   failureRedirect: '/?error=discord',
-  successRedirect: '/members'
+  successRedirect: '/profile'
 }));
 
 // Profile Page
@@ -154,9 +151,9 @@ app.get('/profile', (req, res) => {
 // Update Profile Action
 app.post('/profile/update', async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
-  
+
   const { displayName, firstName, lastName, phone, relationship, role, customAvatarUrl } = req.body;
-  
+
   await User.findByIdAndUpdate(req.user.id, {
     displayName,
     firstName,
