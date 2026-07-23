@@ -32,6 +32,7 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'amethyx-session-secret',
   resave: false,
   saveUninitialized: false,
+  proxy: true,
   cookie: {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -62,10 +63,11 @@ passport.use(new DiscordStrategy({
   }
 }));
 
-passport.serializeUser((user, done) => done(null, user.id));
+passport.serializeUser((user, done) => done(null, String(user.id)));
 passport.deserializeUser(async (id, done) => {
-  const user = await User.findById(id);
-  done(null, user);
+  const user = await User.findById(String(id));
+  if (!user) return done(null, false);
+  return done(null, user);
 });
 
 app.use(passport.initialize());
@@ -134,10 +136,29 @@ app.get('/members', async (req, res) => {
 });
 
 app.get('/auth/discord', passport.authenticate('discord'));
-app.get('/auth/discord/callback', passport.authenticate('discord', {
-  failureRedirect: '/'
-}), (req, res) => {
-  res.redirect('/members');
+app.get('/auth/discord/callback', (req, res, next) => {
+  passport.authenticate('discord', {
+    failureRedirect: '/'
+  }, (err, user, info) => {
+    if (err) {
+      console.error('Discord authentication error:', err);
+      return res.redirect('/?error=discord');
+    }
+
+    if (!user) {
+      console.warn('Discord authentication failed:', info);
+      return res.redirect('/');
+    }
+
+    req.logIn(user, (loginErr) => {
+      if (loginErr) {
+        console.error('Discord session login error:', loginErr);
+        return res.redirect('/?error=session');
+      }
+
+      return res.redirect('/members');
+    });
+  })(req, res, next);
 });
 
 // Profile Page
@@ -521,6 +542,11 @@ app.post('/leave/reset-count', async (req, res) => {
 
 app.get('/logout', (req, res) => {
   req.logout(() => res.redirect('/'));
+});
+
+app.use((err, req, res, next) => {
+  console.error('Unhandled Express error:', err);
+  res.status(500).send('Internal Server Error');
 });
 
 const PORT = Number(process.env.PORT) || 3000;
