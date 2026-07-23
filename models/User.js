@@ -1,4 +1,4 @@
-const db = require('../db/sqlite');
+const { readDatabase, writeDatabase } = require('../db/json');
 
 function normalizeUserRow(row) {
   if (!row) return null;
@@ -16,41 +16,46 @@ function normalizeUserRow(row) {
     role: row.role || 'Member',
     customAvatarUrl: row.customAvatarUrl,
     gangMoney: {
-      status: row.gangMoney_status || 'not_submitted',
-      slipUrl: row.gangMoney_slipUrl || '',
-      amount: Number(row.gangMoney_amount || 0),
-      updatedAt: row.gangMoney_updatedAt ? new Date(row.gangMoney_updatedAt) : null
+      status: row.gangMoney?.status || 'not_submitted',
+      slipUrl: row.gangMoney?.slipUrl || '',
+      amount: Number(row.gangMoney?.amount || 0),
+      updatedAt: row.gangMoney?.updatedAt ? new Date(row.gangMoney.updatedAt) : null
     },
     leaveInfo: {
-      reason: row.leaveInfo_reason || '',
-      startDate: row.leaveInfo_startDate ? new Date(row.leaveInfo_startDate) : null,
-      endDate: row.leaveInfo_endDate ? new Date(row.leaveInfo_endDate) : null,
-      leaveCount: Number(row.leaveInfo_leaveCount || 0),
-      isLeaving: Boolean(row.leaveInfo_isLeaving)
+      reason: row.leaveInfo?.reason || '',
+      startDate: row.leaveInfo?.startDate ? new Date(row.leaveInfo.startDate) : null,
+      endDate: row.leaveInfo?.endDate ? new Date(row.leaveInfo.endDate) : null,
+      leaveCount: Number(row.leaveInfo?.leaveCount || 0),
+      isLeaving: Boolean(row.leaveInfo?.isLeaving)
     }
   };
 }
 
-function normalizeKey(key) {
-  const map = {
-    'gangMoney.status': 'gangMoney_status',
-    'gangMoney.slipUrl': 'gangMoney_slipUrl',
-    'gangMoney.amount': 'gangMoney_amount',
-    'gangMoney.updatedAt': 'gangMoney_updatedAt',
-    'leaveInfo.reason': 'leaveInfo_reason',
-    'leaveInfo.startDate': 'leaveInfo_startDate',
-    'leaveInfo.endDate': 'leaveInfo_endDate',
-    'leaveInfo.leaveCount': 'leaveInfo_leaveCount',
-    'leaveInfo.isLeaving': 'leaveInfo_isLeaving'
-  };
+function normalizeUpdatePayload(update) {
+  const assign = update.$set || update;
+  const normalized = {};
 
-  return map[key] || key;
+  for (const [key, value] of Object.entries(assign)) {
+    if (key === '$inc') continue;
+    if (key === 'gangMoney.status') normalized.gangMoney = { ...(normalized.gangMoney || {}), status: value };
+    else if (key === 'gangMoney.slipUrl') normalized.gangMoney = { ...(normalized.gangMoney || {}), slipUrl: value };
+    else if (key === 'gangMoney.amount') normalized.gangMoney = { ...(normalized.gangMoney || {}), amount: value };
+    else if (key === 'gangMoney.updatedAt') normalized.gangMoney = { ...(normalized.gangMoney || {}), updatedAt: value instanceof Date ? value.toISOString() : value };
+    else if (key === 'leaveInfo.reason') normalized.leaveInfo = { ...(normalized.leaveInfo || {}), reason: value };
+    else if (key === 'leaveInfo.startDate') normalized.leaveInfo = { ...(normalized.leaveInfo || {}), startDate: value instanceof Date ? value.toISOString() : value };
+    else if (key === 'leaveInfo.endDate') normalized.leaveInfo = { ...(normalized.leaveInfo || {}), endDate: value instanceof Date ? value.toISOString() : value };
+    else if (key === 'leaveInfo.leaveCount') normalized.leaveInfo = { ...(normalized.leaveInfo || {}), leaveCount: value };
+    else if (key === 'leaveInfo.isLeaving') normalized.leaveInfo = { ...(normalized.leaveInfo || {}), isLeaving: Boolean(value) };
+    else normalized[key] = value;
+  }
+
+  return normalized;
 }
 
 function buildUserInsert(data) {
   const now = new Date().toISOString();
   const id = data.id || data.discordId || data._id || `user-${Date.now()}`;
-  const row = {
+  return {
     id,
     discordId: data.discordId || id,
     username: data.username || '',
@@ -62,108 +67,84 @@ function buildUserInsert(data) {
     relationship: data.relationship || 'โสด',
     role: data.role || 'Member',
     customAvatarUrl: data.customAvatarUrl || '',
-    gangMoney_status: (data.gangMoney && data.gangMoney.status) || 'not_submitted',
-    gangMoney_slipUrl: (data.gangMoney && data.gangMoney.slipUrl) || '',
-    gangMoney_amount: Number((data.gangMoney && data.gangMoney.amount) || 0),
-    gangMoney_updatedAt: (data.gangMoney && data.gangMoney.updatedAt) ? new Date(data.gangMoney.updatedAt).toISOString() : now,
-    leaveInfo_reason: (data.leaveInfo && data.leaveInfo.reason) || '',
-    leaveInfo_startDate: (data.leaveInfo && data.leaveInfo.startDate) ? new Date(data.leaveInfo.startDate).toISOString() : null,
-    leaveInfo_endDate: (data.leaveInfo && data.leaveInfo.endDate) ? new Date(data.leaveInfo.endDate).toISOString() : null,
-    leaveInfo_leaveCount: Number((data.leaveInfo && data.leaveInfo.leaveCount) || 0),
-    leaveInfo_isLeaving: Boolean(data.leaveInfo && data.leaveInfo.isLeaving),
+    gangMoney: {
+      status: (data.gangMoney && data.gangMoney.status) || 'not_submitted',
+      slipUrl: (data.gangMoney && data.gangMoney.slipUrl) || '',
+      amount: Number((data.gangMoney && data.gangMoney.amount) || 0),
+      updatedAt: (data.gangMoney && data.gangMoney.updatedAt) ? new Date(data.gangMoney.updatedAt).toISOString() : now
+    },
+    leaveInfo: {
+      reason: (data.leaveInfo && data.leaveInfo.reason) || '',
+      startDate: (data.leaveInfo && data.leaveInfo.startDate) ? new Date(data.leaveInfo.startDate).toISOString() : null,
+      endDate: (data.leaveInfo && data.leaveInfo.endDate) ? new Date(data.leaveInfo.endDate).toISOString() : null,
+      leaveCount: Number((data.leaveInfo && data.leaveInfo.leaveCount) || 0),
+      isLeaving: Boolean(data.leaveInfo && data.leaveInfo.isLeaving)
+    },
     createdAt: now,
     updatedAt: now
   };
-
-  return row;
 }
 
 async function findOne(query = {}) {
+  const data = readDatabase();
   const [[key, value]] = Object.entries(query);
   if (!key) return null;
-
-  const normalizedKey = normalizeKey(key);
-  const row = await db.get_async(`SELECT * FROM users WHERE ${normalizedKey} = ?`, [value]);
+  const row = data.users.find(user => user[key] === value);
   return normalizeUserRow(row);
 }
 
 async function find(filter = {}) {
-  const rows = await db.all_async('SELECT * FROM users ORDER BY displayName COLLATE NOCASE');
-  return rows.map(normalizeUserRow);
+  const data = readDatabase();
+  return data.users
+    .slice()
+    .sort((a, b) => String(a.displayName || a.username).localeCompare(String(b.displayName || b.username), 'th'))
+    .map(normalizeUserRow);
 }
 
 async function findById(id) {
-  const row = await db.get_async('SELECT * FROM users WHERE id = ?', [id]);
+  const data = readDatabase();
+  const row = data.users.find(user => user.id === String(id));
   return normalizeUserRow(row);
 }
 
 async function findByIdAndUpdate(id, update) {
-  const current = await findById(id);
-  if (!current) return null;
+  const data = readDatabase();
+  const userIndex = data.users.findIndex(user => user.id === String(id));
+  if (userIndex === -1) return null;
 
-  const setColumns = [];
-  const values = [];
-
-  const assign = update.$set || update;
-  for (const [key, value] of Object.entries(assign)) {
-    if (key === '$inc') continue;
-    const normalized = normalizeKey(key);
-    if (normalized === 'id') continue;
-
-    setColumns.push(`${normalized} = ?`);
-    values.push(value instanceof Date ? value.toISOString() : value);
-  }
-
-  if (update.$inc) {
-    for (const [key, value] of Object.entries(update.$inc)) {
-      const normalized = normalizeKey(key);
-      setColumns.push(`${normalized} = COALESCE(${normalized}, 0) + ?`);
-      values.push(Number(value) || 0);
-    }
-  }
-
-  if (setColumns.length > 0) {
-    values.push(new Date().toISOString());
-    values.push(id);
-    await db.run_async(`UPDATE users SET ${setColumns.join(', ')}, updatedAt = ? WHERE id = ?`, values);
+  const payload = normalizeUpdatePayload(update);
+  if (Object.keys(payload).length > 0) {
+    data.users[userIndex] = {
+      ...data.users[userIndex],
+      ...payload,
+      updatedAt: new Date().toISOString()
+    };
+    writeDatabase(data);
   }
 
   return findById(id);
 }
 
 async function create(data) {
+  const dataSet = readDatabase();
   const row = buildUserInsert(data);
-  await db.run_async(`INSERT INTO users (
-    id, discordId, username, avatar, displayName, firstName, lastName, phone, relationship,
-    role, customAvatarUrl, gangMoney_status, gangMoney_slipUrl, gangMoney_amount,
-    gangMoney_updatedAt, leaveInfo_reason, leaveInfo_startDate, leaveInfo_endDate,
-    leaveInfo_leaveCount, leaveInfo_isLeaving, createdAt, updatedAt
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `, [
-    row.id, row.discordId, row.username, row.avatar, row.displayName, row.firstName, row.lastName, row.phone, row.relationship,
-    row.role, row.customAvatarUrl, row.gangMoney_status, row.gangMoney_slipUrl, row.gangMoney_amount,
-    row.gangMoney_updatedAt, row.leaveInfo_reason, row.leaveInfo_startDate, row.leaveInfo_endDate,
-    row.leaveInfo_leaveCount, row.leaveInfo_isLeaving ? 1 : 0, row.createdAt, row.updatedAt
-  ]);
 
+  if (dataSet.users.some(user => user.discordId === row.discordId)) {
+    return findById(row.id);
+  }
+
+  dataSet.users.push(row);
+  writeDatabase(dataSet);
   return findById(row.id);
 }
 
 async function updateMany(filter = {}, update = {}) {
-  const assign = update.$set || update;
-  const setColumns = [];
-  const values = [];
-
-  for (const [key, value] of Object.entries(assign)) {
-    const normalized = normalizeKey(key);
-    setColumns.push(`${normalized} = ?`);
-    values.push(value instanceof Date ? value.toISOString() : value);
+  const data = readDatabase();
+  const payload = normalizeUpdatePayload(update);
+  for (const user of data.users) {
+    Object.assign(user, payload, { updatedAt: new Date().toISOString() });
   }
-
-  if (setColumns.length > 0) {
-    values.push(new Date().toISOString());
-    await db.run_async(`UPDATE users SET ${setColumns.join(', ')}, updatedAt = ?`, values);
-  }
+  writeDatabase(data);
 }
 
 module.exports = {

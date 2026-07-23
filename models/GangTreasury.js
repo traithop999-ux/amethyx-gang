@@ -1,57 +1,49 @@
-const db = require('../db/sqlite');
+const { readDatabase, writeDatabase } = require('../db/json');
 
-function normalizeTreasuryRow(row, logs = []) {
+function normalizeTreasuryRow(row) {
   if (!row) return null;
 
   return {
     id: row.id,
     balance: Number(row.balance || 0),
-    logs: logs.map(log => ({
+    logs: Array.isArray(row.logs) ? row.logs.map(log => ({
       ...log,
       amount: Number(log.amount || 0),
       createdAt: log.createdAt ? new Date(log.createdAt) : new Date()
-    })),
+    })) : [],
     async save() {
-      const now = new Date().toISOString();
-      await db.run_async('UPDATE treasury SET balance = ?, updatedAt = ? WHERE id = ?', [this.balance, now, this.id]);
-      await db.run_async('DELETE FROM logs WHERE treasuryId = ?', [this.id]);
-
-      for (const log of this.logs || []) {
-        await db.run_async(
-          'INSERT INTO logs (action, performedBy, amount, reason, treasuryId, createdAt) VALUES (?, ?, ?, ?, ?, ?)',
-          [log.action, log.performedBy, Number(log.amount || 0), log.reason || '', this.id, (log.createdAt || new Date()).toISOString()]
-        );
-      }
-
+      const data = readDatabase();
+      data.treasury = {
+        ...data.treasury,
+        id: this.id,
+        balance: Number(this.balance || 0),
+        logs: Array.isArray(this.logs) ? this.logs.map(log => ({
+          ...log,
+          amount: Number(log.amount || 0),
+          createdAt: (log.createdAt || new Date()).toISOString()
+        })) : []
+      };
+      writeDatabase(data);
       return this;
     }
   };
 }
 
 async function findOne(query = {}) {
-  const row = await db.get_async('SELECT * FROM treasury WHERE id = ?', ['main']);
-  if (!row) return null;
-
-  const logs = await db.all_async('SELECT * FROM logs WHERE treasuryId = ? ORDER BY createdAt DESC', ['main']);
-  return normalizeTreasuryRow(row, logs);
+  const data = readDatabase();
+  const treasury = data.treasury || { id: 'main', balance: 0, logs: [] };
+  return normalizeTreasuryRow(treasury);
 }
 
 async function create(data = {}) {
-  const id = data.id || 'main';
-  const balance = Number(data.balance || 0);
-  await db.run_async('INSERT OR IGNORE INTO treasury (id, balance, createdAt, updatedAt) VALUES (?, ?, ?, ?)', [id, balance, new Date().toISOString(), new Date().toISOString()]);
-
-  const logs = Array.isArray(data.logs) ? data.logs : [];
-  for (const log of logs) {
-    await db.run_async(
-      'INSERT INTO logs (action, performedBy, amount, reason, treasuryId, createdAt) VALUES (?, ?, ?, ?, ?, ?)',
-      [log.action, log.performedBy, Number(log.amount || 0), log.reason || '', id, (log.createdAt || new Date()).toISOString()]
-    );
-  }
-
-  const row = await db.get_async('SELECT * FROM treasury WHERE id = ?', [id]);
-  const rows = await db.all_async('SELECT * FROM logs WHERE treasuryId = ? ORDER BY createdAt DESC', [id]);
-  return normalizeTreasuryRow(row, rows);
+  const dataSet = readDatabase();
+  dataSet.treasury = {
+    id: data.id || 'main',
+    balance: Number(data.balance || 0),
+    logs: Array.isArray(data.logs) ? data.logs : []
+  };
+  writeDatabase(dataSet);
+  return normalizeTreasuryRow(dataSet.treasury);
 }
 
 module.exports = {

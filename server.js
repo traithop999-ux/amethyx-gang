@@ -6,7 +6,7 @@ const DiscordStrategy = require('passport-discord').Strategy;
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const db = require('./db/sqlite');
+const db = require('./db/json');
 const User = require('./models/User');
 const GangTreasury = require('./models/GangTreasury');
 
@@ -23,7 +23,7 @@ async function getOrCreateTreasury() {
   return treasury;
 }
 
-// SQLite Database connection is initialized in ./db/sqlite.js
+// JSON database initialization is handled in ./db/json.js
 
 // View Engine & Middleware
 app.set('view engine', 'ejs');
