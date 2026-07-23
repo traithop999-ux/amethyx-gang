@@ -485,12 +485,16 @@ app.get('/leave', async (req, res) => {
       const startDateInBangkok = start ? toBangkokDateString(start) : null;
       const endDateInBangkok = end ? toBangkokDateString(end) : null;
 
-      const isLeavingToday = Boolean(leaveInfo.isLeaving) ||
-        (startDateInBangkok && endDateInBangkok && todayInBangkok >= startDateInBangkok && todayInBangkok <= endDateInBangkok);
+      const isLeavingToday = Boolean(
+        startDateInBangkok &&
+        endDateInBangkok &&
+        todayInBangkok >= startDateInBangkok &&
+        todayInBangkok <= endDateInBangkok
+      );
 
       m.leaveInfo = {
         ...(leaveInfo || {}),
-        isLeaving: Boolean(leaveInfo.isLeaving),
+        isLeaving: isLeavingToday,
         isLeavingToday
       };
 
