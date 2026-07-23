@@ -14,20 +14,29 @@ const defaultData = {
 function ensureDatabaseFile() {
   if (!fs.existsSync(filePath)) {
     fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
+    return structuredClone(defaultData);
   }
 
-  const data = readDatabase();
-  if (!Array.isArray(data.users)) data.users = [];
-  if (!data.treasury || !data.treasury.id) {
-    data.treasury = { ...defaultData.treasury, ...data.treasury };
+  try {
+    const raw = fs.readFileSync(filePath, 'utf8');
+    const data = JSON.parse(raw);
+
+    if (!Array.isArray(data.users)) data.users = [];
+    if (!data.treasury || !data.treasury.id) {
+      data.treasury = { ...defaultData.treasury, ...(data.treasury || {}) };
+    }
+    if (!Array.isArray(data.treasury.logs)) data.treasury.logs = [];
+
+    writeDatabase(data);
+    return data;
+  } catch (err) {
+    fs.writeFileSync(filePath, JSON.stringify(defaultData, null, 2));
+    return structuredClone(defaultData);
   }
-  if (!Array.isArray(data.treasury.logs)) data.treasury.logs = [];
-  writeDatabase(data);
 }
 
 function readDatabase() {
-  ensureDatabaseFile();
-  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  return ensureDatabaseFile();
 }
 
 function writeDatabase(data) {
