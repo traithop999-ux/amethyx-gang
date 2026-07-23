@@ -1,5 +1,34 @@
 {
-  "users": [],
+  "users": [
+    {
+      "id": "verification-user-1784842938847",
+      "discordId": "verification-user-1784842938847",
+      "username": "verify",
+      "avatar": "",
+      "displayName": "verify",
+      "firstName": "",
+      "lastName": "",
+      "phone": "",
+      "relationship": "โสด",
+      "role": "Member",
+      "customAvatarUrl": "",
+      "gangMoney": {
+        "status": "not_submitted",
+        "slipUrl": "",
+        "amount": 0,
+        "updatedAt": "2026-07-23T21:42:18.848Z"
+      },
+      "leaveInfo": {
+        "reason": "ติดงาน",
+        "startDate": "2026-07-24T00:00:00.000Z",
+        "endDate": "2026-07-25T00:00:00.000Z",
+        "isLeaving": true,
+        "leaveCount": 1
+      },
+      "createdAt": "2026-07-23T21:42:18.848Z",
+      "updatedAt": "2026-07-23T21:42:18.850Z"
+    }
+  ],
   "treasury": {
     "id": "main",
     "balance": 0,

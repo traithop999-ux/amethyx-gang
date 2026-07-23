@@ -26,6 +26,22 @@ async function getOrCreateTreasury() {
 
 // JSON database initialization is handled in ./db/json.js
 
+function toBangkokDateString(dateValue) {
+  const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Bangkok',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(date);
+
+  const year = parts.find(part => part.type === 'year')?.value;
+  const month = parts.find(part => part.type === 'month')?.value;
+  const day = parts.find(part => part.type === 'day')?.value;
+
+  return `${year}-${month}-${day}`;
+}
+
 // View Engine & Middleware
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
@@ -458,24 +474,28 @@ app.get('/leave', async (req, res) => {
     const isOfficerOrLeader = ['Leader', 'Officer'].includes(req.user.role);
     const members = await User.find({});
     
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const todayInBangkok = toBangkokDateString(new Date());
 
     let todayLeavingCount = 0;
     
     members.forEach(m => {
-      if (m.leaveInfo && m.leaveInfo.startDate && m.leaveInfo.endDate) {
-        const start = new Date(m.leaveInfo.startDate);
-        const end = new Date(m.leaveInfo.endDate);
-        start.setHours(0,0,0,0);
-        end.setHours(23,59,59,999);
+      const leaveInfo = m.leaveInfo || {};
+      const start = leaveInfo.startDate ? new Date(leaveInfo.startDate) : null;
+      const end = leaveInfo.endDate ? new Date(leaveInfo.endDate) : null;
+      const startDateInBangkok = start ? toBangkokDateString(start) : null;
+      const endDateInBangkok = end ? toBangkokDateString(end) : null;
 
-        if (today >= start && today <= end) {
-          m.leaveInfo.isLeavingToday = true;
-          todayLeavingCount++;
-        } else {
-          m.leaveInfo.isLeavingToday = false;
-        }
+      const isLeavingToday = Boolean(leaveInfo.isLeaving) ||
+        (startDateInBangkok && endDateInBangkok && todayInBangkok >= startDateInBangkok && todayInBangkok <= endDateInBangkok);
+
+      m.leaveInfo = {
+        ...(leaveInfo || {}),
+        isLeaving: Boolean(leaveInfo.isLeaving),
+        isLeavingToday
+      };
+
+      if (isLeavingToday) {
+        todayLeavingCount++;
       }
     });
 
@@ -501,8 +521,8 @@ app.post('/leave/submit', async (req, res) => {
     await User.findByIdAndUpdate(req.user.id, {
       $set: {
         'leaveInfo.reason': reason,
-        'leaveInfo.startDate': new Date(startDate),
-        'leaveInfo.endDate': new Date(endDate),
+        'leaveInfo.startDate': new Date(`${startDate}T00:00:00+07:00`),
+        'leaveInfo.endDate': new Date(`${endDate}T23:59:59+07:00`),
         'leaveInfo.isLeaving': true
       },
       $inc: { 'leaveInfo.leaveCount': 1 }
