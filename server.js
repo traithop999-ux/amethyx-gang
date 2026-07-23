@@ -1,12 +1,12 @@
 require('dotenv').config();
 const express = require('express');
-const mongoose = require('mongoose');
 const session = require('express-session');
 const passport = require('passport');
 const DiscordStrategy = require('passport-discord').Strategy;
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const db = require('./db/sqlite');
 const User = require('./models/User');
 const GangTreasury = require('./models/GangTreasury');
 
@@ -23,12 +23,7 @@ async function getOrCreateTreasury() {
   return treasury;
 }
 
-// Database Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/amethyx')
-  .then(() => console.log('MongoDB connected'))
-  .catch((err) => {
-    console.error('MongoDB connection error:', err.message);
-  });
+// SQLite Database connection is initialized in ./db/sqlite.js
 
 // View Engine & Middleware
 app.set('view engine', 'ejs');
