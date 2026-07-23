@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMETHYX GANG - ส่งเงินแก๊ง</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+    body {
+      background: #09070f; color: #ffffff; min-height: 100vh;
+      padding: 40px 20px; overflow-x: hidden; position: relative;
+    }
+
+    .bg-glow-1 {
+      position: fixed; width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(157, 78, 221, 0.25) 0%, rgba(0,0,0,0) 70%);
+      top: -10%; left: 10%; filter: blur(60px); z-index: 0; pointer-events: none;
+    }
+    .bg-glow-2 {
+      position: fixed; width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(114, 9, 183, 0.2) 0%, rgba(0,0,0,0) 70%);
+      bottom: -10%; right: 10%; filter: blur(60px); z-index: 0; pointer-events: none;
+    }
+
+    .main-wrapper { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+    
+    .nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .btn-back {
+      color: #c77dff; text-decoration: none; font-size: 1rem; font-weight: 500;
+      display: flex; align-items: center; gap: 8px; transition: 0.2s;
+    }
+    .btn-back:hover { color: #ffffff; transform: translateX(-3px); }
+
+    .card-box {
+      background: rgba(20, 16, 33, 0.75); border: 1px solid rgba(157, 78, 221, 0.25);
+      border-radius: 20px; padding: 30px; margin-bottom: 30px; backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .title { font-size: 1.4rem; font-weight: 600; color: #e0aaff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+
+    /* Form & Input Style */
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; color: #c77dff; font-size: 0.95rem; }
+    .form-control {
+      width: 100%; background: rgba(10, 8, 20, 0.6); border: 1px solid rgba(157, 78, 221, 0.3);
+      padding: 12px 16px; border-radius: 12px; color: white; font-size: 1rem; outline: none; transition: 0.3s;
+    }
+    .form-control:focus { border-color: #9d4edd; box-shadow: 0 0 12px rgba(157, 78, 221, 0.4); }
+
+    /* File Input UI */
+    .file-input-group {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border: 2px dashed rgba(157, 78, 221, 0.4); padding: 30px 20px; text-align: center;
+      border-radius: 15px; cursor: pointer; margin-bottom: 20px; transition: all 0.3s ease;
+      background: rgba(157, 78, 221, 0.03);
+    }
+    .file-input-group:hover {
+      border-color: #9d4edd; background: rgba(157, 78, 221, 0.08);
+      box-shadow: 0 0 15px rgba(157, 78, 221, 0.2);
+    }
+    input[type="file"] { display: none; }
+
+    .btn-submit {
+      background: linear-gradient(135deg, #9d4edd 0%, #7b2cbf 100%);
+      color: white; border: none; padding: 14px 25px; border-radius: 12px;
+      font-weight: 600; cursor: pointer; width: 100%; font-size: 1rem;
+      box-shadow: 0 4px 15px rgba(157, 78, 221, 0.3); transition: all 0.3s ease;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(157, 78, 221, 0.5); }
+
+    /* Badges */
+    .badge { padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+    .badge-pending { background: rgba(255, 193, 7, 0.15); color: #ffc107; border: 1px solid #ffc107; }
+    .badge-approved { background: rgba(40, 167, 69, 0.15); color: #28a745; border: 1px solid #28a745; }
+    .badge-rejected { background: rgba(220, 53, 69, 0.15); color: #dc3545; border: 1px solid #dc3545; }
+
+    /* Control Buttons */
+    .btn-reset-all {
+      background: linear-gradient(135deg, #ff9f43 0%, #ee5253 100%);
+      color: white; border: none; padding: 9px 15px; border-radius: 10px;
+      font-size: 0.85rem; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s ease;
+    }
+    .btn-reset-all:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(238, 82, 83, 0.4); }
+
+    .btn-delete-history {
+      background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+      color: white; border: none; padding: 9px 15px; border-radius: 10px;
+      font-size: 0.85rem; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s ease;
+    }
+    .btn-delete-history:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4); }
+
+    /* Table for Admin */
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 14px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 0.92rem; vertical-align: middle; }
+    th { color: #a0a0b8; font-weight: 500; }
+    .slip-img { width: 55px; height: 55px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(157, 78, 221, 0.3); transition: 0.2s; }
+    .slip-img:hover { transform: scale(1.08); border-color: #9d4edd; }
+    
+    .action-btns { display: flex; gap: 6px; }
+    .btn-approve { background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+    .btn-approve:hover { background: #218838; }
+    .btn-reject { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
+    .btn-reject:hover { background: #c82333; }
+  </style>
+</head>
+<body>
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+
+  <div class="main-wrapper">
+    <div class="nav-bar">
+      <a href="/members" class="btn-back"><i class="fa-solid fa-arrow-left"></i> กลับหน้าสมาชิก</a>
+    </div>
+
+    <!-- ส่วนอัปโหลดสำหรับสมาชิก -->
+    <div class="card-box">
+      <div class="title"><i class="fa-solid fa-file-invoice-dollar"></i> แนบหลักฐานการส่งเงินแก๊ง</div>
+      
+      <div style="margin-bottom: 25px; display: flex; align-items: center; gap: 10px; font-size: 1.05rem;">
+        <span>สถานะของคุณปัจจุบัน:</span>
+        <% if (user.gangMoney?.status === 'pending') { %>
+          <span class="badge badge-pending"><i class="fa-solid fa-clock"></i> รอตรวจสอบ</span>
+        <% } else if (user.gangMoney?.status === 'approved') { %>
+          <span class="badge badge-approved"><i class="fa-solid fa-circle-check"></i> ส่งเงินแล้ว</span>
+        <% } else { %>
+          <span class="badge badge-rejected"><i class="fa-solid fa-circle-xmark"></i> ยังไม่ส่งเงิน</span>
+        <% } %>
+      </div>
+
+      <form action="/gang-money/upload" method="POST" enctype="multipart/form-data">
+        <!-- ช่องระบุจำนวนเงิน -->
+        <div class="form-group">
+          <label for="amountInput"><i class="fa-solid fa-coins"></i> จำนวนเงินที่ส่ง ($ / บาท)</label>
+          <input type="number" id="amountInput" name="amount" class="form-control" placeholder="ระบุจำนวนเงิน เช่น 50000" min="0" step="any" required>
+        </div>
+
+        <label for="slipInput" class="file-input-group">
+          <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.8rem; color: #9d4edd; margin-bottom: 12px;"></i>
+          <p id="fileNameText" style="color: #e0aaff; font-size: 1rem;">กดเพื่อเลือกรูปภาพสลิปจากเครื่องของคุณ</p>
+          <input type="file" id="slipInput" name="slipImage" accept="image/*" required onchange="updateFileName(this)">
+        </label>
+        <button type="submit" class="btn-submit"><i class="fa-solid fa-paper-plane"></i> ยืนยันการส่งสลิป</button>
+      </form>
+    </div>
+
+    <!-- ส่วนตรวจสลิปสำหรับ Leader & Officer -->
+    <% if (isOfficerOrLeader) { %>
+      <div class="card-box">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+          <div class="title" style="margin-bottom: 0;">
+            <i class="fa-solid fa-list-check"></i> รายการตรวจสอบเงินแก๊ง
+          </div>
+
+          <!-- ปุ่มควบคุมจัดการข้อมูล -->
+          <div style="display: flex; gap: 10px;">
+            <form action="/gang-money/reset-all" method="POST" onsubmit="return confirmReset(event)">
+              <button type="submit" class="btn-reset-all">
+                <i class="fa-solid fa-rotate-right"></i> รีเซ็ตสัปดาห์ใหม่
+              </button>
+            </form>
+
+            <form action="/gang-money/delete-history" method="POST" onsubmit="return confirmDeleteHistory(event)">
+              <button type="submit" class="btn-delete-history">
+                <i class="fa-solid fa-trash-can"></i> ลบประวัติทั้งหมด
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>สมาชิก</th>
+              <th>จำนวนเงิน</th>
+              <th>รูปสลิป</th>
+              <th>วันที่ส่ง (ไทย)</th>
+              <th>สถานะ</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% if (allSubmissions && allSubmissions.length > 0) { %>
+              <% allSubmissions.forEach(m => { %>
+                <tr>
+                  <td><strong><%= m.displayName || m.username %></strong></td>
+                  <!-- แสดงจำนวนเงิน ใส่คอมม่าให้สวยงาม -->
+                  <td style="color: #2ed573; font-weight: 600; font-size: 1rem;">
+                    $ <%= (m.gangMoney?.amount || 0).toLocaleString() %>
+                  </td>
+                  <td>
+                    <% if (m.gangMoney?.slipUrl) { %>
+                      <a href="<%= m.gangMoney.slipUrl %>" target="_blank">
+                        <img src="<%= m.gangMoney.slipUrl %>" class="slip-img" title="กดเพื่อดูรูปใหญ่">
+                      </a>
+                    <% } else { %>
+                      <span style="color: #666; font-size: 0.85rem;">ไม่มีรูป</span>
+                    <% } %>
+                  </td>
+                  <td style="color: #c77dff; font-size: 0.88rem;">
+                    <% if (m.gangMoney?.updatedAt) { %>
+                      <i class="fa-regular fa-calendar-days"></i> <%= m.gangMoney.formattedDate %>
+                    <% } else { %>
+                      <span style="color: #666;">-</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <% if (m.gangMoney?.status === 'pending') { %>
+                      <span class="badge badge-pending"><i class="fa-solid fa-clock"></i> รอตรวจสอบ</span>
+                    <% } else if (m.gangMoney?.status === 'approved') { %>
+                      <span class="badge badge-approved"><i class="fa-solid fa-circle-check"></i> ส่งเงินแล้ว</span>
+                    <% } else { %>
+                      <span class="badge badge-rejected"><i class="fa-solid fa-circle-xmark"></i> ยังไม่ส่งเงิน</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <div class="action-btns">
+                      <form action="/gang-money/verify/<%= m._id %>" method="POST">
+                        <input type="hidden" name="status" value="approved">
+                        <button type="submit" class="btn-approve" title="อนุมัติ"><i class="fa-solid fa-check"></i> ผ่าน</button>
+                      </form>
+                      <form action="/gang-money/verify/<%= m._id %>" method="POST">
+                        <input type="hidden" name="status" value="rejected">
+                        <button type="submit" class="btn-reject" title="ปฏิเสธ"><i class="fa-solid fa-xmark"></i> ไม่ผ่าน</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+            <% } else { %>
+              <tr>
+                <td colspan="6" style="text-align: center; color: #888; padding: 20px;">ยังไม่มีรายการข้อมูลสมาชิก</td>
+              </tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+
+  <canvas id="snowCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;"></canvas>
+
+  <script>
+    function updateFileName(input) {
+      if (input.files && input.files[0]) {
+        document.getElementById('fileNameText').innerHTML = "<i class='fa-solid fa-file-image'></i> เลือกไฟล์แล้ว: <strong>" + input.files[0].name + "</strong>";
+      }
+    }
+
+    function confirmReset(event) {
+      return confirm("⚠️ คุณแน่ใจหรือไม่ที่จะ 'รีเซ็ตสถานะ' เป็นยังไม่ส่งเงินสำหรับเริ่มต้นสัปดาห์ใหม่?");
+    }
+
+    function confirmDeleteHistory(event) {
+      return confirm("🚨 เตือนภัย! คุณกำลังจะ 'ลบประวัติการส่งเงินและรูปสลิปทั้งหมด' ออกจากระบบ\n\nการกระทำนี้ไม่สามารถย้อนกลับได้ คุณแน่ใจหรือไม่?");
+    }
+
+    // Snow Animation
+    const canvas = document.getElementById('snowCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const particles = [];
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: Math.random() * width, y: Math.random() * height,
+        size: Math.random() * 2 + 1, speedY: Math.random() * 0.8 + 0.3,
+        color: ['#e0aaff', '#c77dff', '#9d4edd'][Math.floor(Math.random() * 3)]
+      });
+    }
+
+    function animateSnow() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.y += p.speedY;
+        if (p.y > height) p.y = 0;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color; ctx.fill();
+      });
+      requestAnimationFrame(animateSnow);
+    }
+    animateSnow();
+  </script>
+  <script src="/js/music-player.js"></script>
+</body>
+</html>

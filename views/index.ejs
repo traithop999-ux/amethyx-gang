@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMETHYX GANG - Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+    body {
+      background: #09070f; color: #ffffff; min-height: 100vh;
+      display: flex; justify-content: center; align-items: center; overflow: hidden;
+    }
+    .bg-glow-1 {
+      position: absolute; width: 450px; height: 450px;
+      background: radial-gradient(circle, rgba(157, 78, 221, 0.35) 0%, rgba(0,0,0,0) 70%);
+      top: 15%; left: 20%; filter: blur(60px); pointer-events: none;
+    }
+    .container {
+      position: relative; z-index: 1; text-align: center;
+      background: rgba(23, 18, 38, 0.7); backdrop-filter: blur(20px);
+      border: 1px solid rgba(157, 78, 221, 0.3); padding: 50px 40px;
+      border-radius: 24px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      max-width: 450px; width: 90%; animation: floatCard 6s ease-in-out infinite;
+    }
+    @keyframes floatCard { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    .logo-title {
+      font-size: 2.8rem; font-weight: 700;
+      background: linear-gradient(135deg, #c77dff 0%, #7b2cbf 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .subtitle { color: #a0a0b8; font-size: 0.95rem; margin-bottom: 35px; }
+    .btn-discord {
+      display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+      background: linear-gradient(135deg, #5865F2 0%, #404EED 100%);
+      color: white; padding: 14px 28px; font-size: 1.05rem; font-weight: 600;
+      border-radius: 12px; text-decoration: none; transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(88, 101, 242, 0.35); width: 100%;
+    }
+    .btn-discord:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(88, 101, 242, 0.5); }
+  </style>
+</head>
+<body>
+  <div class="bg-glow-1"></div>
+  <div class="container">
+    <h1 class="logo-title">AMETHYX GANG</h1>
+    <p class="subtitle">ระบบจัดการสมาชิกและข้อมูลบัญชีรายชื่อ FiveM</p>
+    <a href="/auth/discord" class="btn-discord">
+      <i class="fa-brands fa-discord" style="font-size: 1.3rem;"></i> LOGIN WITH DISCORD
+    </a>
+  </div>
+  <script src="/js/music-player.js"></script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMETHYX GANG - กระเป๋าเงินแก๊ง</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+    body {
+      background: #09070f; color: #ffffff; min-height: 100vh;
+      padding: 40px 20px; overflow-x: hidden; position: relative;
+    }
+
+    .bg-glow-1 {
+      position: fixed; width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(157, 78, 221, 0.25) 0%, rgba(0,0,0,0) 70%);
+      top: -10%; left: 10%; filter: blur(60px); z-index: 0; pointer-events: none;
+    }
+    .bg-glow-2 {
+      position: fixed; width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(114, 9, 183, 0.2) 0%, rgba(0,0,0,0) 70%);
+      bottom: -10%; right: 10%; filter: blur(60px); z-index: 0; pointer-events: none;
+    }
+
+    .main-wrapper { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+
+    .nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .btn-back {
+      color: #c77dff; text-decoration: none; font-size: 1rem; font-weight: 500;
+      display: flex; align-items: center; gap: 8px; transition: 0.2s;
+    }
+    .btn-back:hover { color: #ffffff; transform: translateX(-3px); }
+
+    /* Total Balance Card */
+    .balance-card {
+      background: linear-gradient(135deg, rgba(46, 213, 115, 0.15), rgba(20, 16, 33, 0.85));
+      border: 1px solid rgba(46, 213, 115, 0.4); border-radius: 24px; padding: 35px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 30px; backdrop-filter: blur(12px); box-shadow: 0 12px 35px rgba(0,0,0,0.5);
+    }
+    .balance-info h3 { color: #a0a0b8; font-size: 1.1rem; font-weight: 400; margin-bottom: 5px; }
+    .balance-info h1 { font-size: 3rem; font-weight: 700; color: #2ed573; text-shadow: 0 0 20px rgba(46, 213, 115, 0.3); }
+
+    /* Forms Section */
+    .grid-forms { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 25px; margin-bottom: 35px; }
+
+    .card-box {
+      background: rgba(20, 16, 33, 0.75); border: 1px solid rgba(157, 78, 221, 0.25);
+      border-radius: 20px; padding: 28px; backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .title { font-size: 1.3rem; font-weight: 600; color: #e0aaff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; margin-bottom: 8px; color: #c77dff; font-size: 0.9rem; }
+    .form-control {
+      width: 100%; background: rgba(10, 8, 20, 0.6); border: 1px solid rgba(157, 78, 221, 0.3);
+      padding: 12px 16px; border-radius: 12px; color: white; font-size: 0.95rem; outline: none; transition: 0.3s;
+    }
+    .form-control:focus { border-color: #9d4edd; box-shadow: 0 0 12px rgba(157, 78, 221, 0.4); }
+
+    .btn-action {
+      border: none; padding: 12px 20px; border-radius: 12px;
+      font-weight: 600; cursor: pointer; width: 100%; font-size: 0.95rem;
+      transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-withdraw {
+      background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%); color: white;
+      box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3);
+    }
+    .btn-withdraw:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255, 71, 87, 0.5); }
+
+    .btn-adjust {
+      background: linear-gradient(135deg, #9d4edd 0%, #7b2cbf 100%); color: white;
+      box-shadow: 0 4px 15px rgba(157, 78, 221, 0.3);
+    }
+    .btn-adjust:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(157, 78, 221, 0.5); }
+
+    /* Logs Table */
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { padding: 14px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 0.92rem; vertical-align: middle; }
+    th { color: #a0a0b8; font-weight: 500; }
+
+    .badge-action { padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+    .badge-withdraw { background: rgba(255, 71, 87, 0.15); color: #ff4757; border: 1px solid #ff4757; }
+    .badge-deposit { background: rgba(46, 213, 115, 0.15); color: #2ed573; border: 1px solid #2ed573; }
+    .badge-adjust { background: rgba(255, 193, 7, 0.15); color: #ffc107; border: 1px solid #ffc107; }
+    .amount-negative { font-weight: 700; font-size: 0.95rem; color: #ff4757; }
+    .amount-positive { font-weight: 700; font-size: 0.95rem; color: #2ed573; }
+  </style>
+</head>
+<body>
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+
+  <div class="main-wrapper">
+    <div class="nav-bar">
+      <a href="/members" class="btn-back"><i class="fa-solid fa-arrow-left"></i> กลับหน้าสมาชิก</a>
+    </div>
+
+    <!-- ยอดเงินกองกลางทั้งหมด -->
+    <div class="balance-card">
+      <div class="balance-info">
+        <h3><i class="fa-solid fa-vault"></i> ยอดเงินกองกลางแก๊งทั้งหมด</h3>
+        <h1>$ <%= balance.toLocaleString() %></h1>
+      </div>
+      <i class="fa-solid fa-sack-dollar" style="font-size: 4.5rem; color: rgba(46, 213, 115, 0.35);"></i>
+    </div>
+
+    <!-- โซนจัดการสำหรับ Leader / Officer -->
+    <% if (isOfficerOrLeader) { %>
+      <div class="grid-forms">
+        <!-- ฟอร์มเบิกเงิน -->
+        <div class="card-box">
+          <div class="title"><i class="fa-solid fa-hand-holding-dollar"></i> เบิกเงินแก๊ง</div>
+          <form action="/gang-treasury/withdraw" method="POST">
+            <div class="form-group">
+              <label><i class="fa-solid fa-coins"></i> จำนวนเงินที่เบิก ($)</label>
+              <input type="number" name="amount" class="form-control" placeholder="ระบุจำนวนเงิน" min="1" step="any" required>
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-comment-dots"></i> เบิกไปทำอะไร (เหตุผล)</label>
+              <input type="text" name="reason" class="form-control" placeholder="เช่น ซื้ออาวุธ, เติมน้ำมัน, สวัสดิการแก๊ง" required>
+            </div>
+            <button type="submit" class="btn-action btn-withdraw"><i class="fa-solid fa-arrow-up-from-bracket"></i> ยืนยันเบิกเงิน</button>
+          </form>
+        </div>
+
+        <!-- ฟอร์มปรับยอดเงินโดยตรง -->
+        <div class="card-box">
+          <div class="title"><i class="fa-solid fa-sliders"></i> ปรับยอดเงินกองกลาง</div>
+          <form action="/gang-treasury/adjust" method="POST">
+            <div class="form-group">
+              <label><i class="fa-solid fa-arrows-up-down"></i> การดำเนินการ</label>
+              <select name="type" class="form-control">
+                <option value="add">➕ เพิ่มเงินเข้ากองกลาง</option>
+                <option value="subtract">➖ หักเงินออกจากกองกลาง</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-coins"></i> จำนวนเงิน ($)</label>
+              <input type="number" name="amount" class="form-control" placeholder="ระบุจำนวนเงิน" min="1" step="any" required>
+            </div>
+            <div class="form-group">
+              <label><i class="fa-solid fa-note-sticky"></i> หมายเหตุ</label>
+              <input type="text" name="reason" class="form-control" placeholder="เช่น รายได้จัดกิจกรรม, ปรับสมดุล">
+            </div>
+            <button type="submit" class="btn-action btn-adjust"><i class="fa-solid fa-floppy-disk"></i> บันทึกการปรับยอด</button>
+          </form>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- ประวัติการใช้งานเงินกองกลาง (Log History) -->
+    <div class="card-box">
+      <div class="title"><i class="fa-solid fa-receipt"></i> ประวัติการเข้า-ออกของเงินแก๊ง (Logs)</div>
+      <table>
+        <thead>
+          <tr>
+            <th>วันที่ / เวลา</th>
+            <th>ประเภท</th>
+            <th>ผู้ดำเนินการ / สมาชิก</th>
+            <th>รายการ / เหตุผล</th>
+            <th>จำนวนเงิน ($)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (logs && logs.length > 0) { %>
+            <% logs.forEach(log => { %>
+              <tr>
+                <td style="color: #c77dff; font-size: 0.85rem;">
+                  <i class="fa-regular fa-clock"></i> <%= log.formattedDate %>
+                </td>
+                <td>
+                  <% if (log.action === 'withdraw') { %>
+                    <span class="badge-action badge-withdraw"><i class="fa-solid fa-arrow-down"></i> เบิกเงิน</span>
+                  <% } else if (log.action === 'deposit') { %>
+                    <span class="badge-action badge-deposit"><i class="fa-solid fa-arrow-up"></i> เงินเข้า</span>
+                  <% } else { %>
+                    <span class="badge-action badge-adjust"><i class="fa-solid fa-gear"></i> ปรับยอด</span>
+                  <% } %>
+                </td>
+                <td><strong><%= log.performedBy %></strong></td>
+                <td style="color: #e0aaff;"><%= log.reason %></td>
+                <td class="<%= (log.amount < 0 || log.action === 'withdraw') ? 'amount-negative' : 'amount-positive' %>">
+                  <%= log.amount < 0 || log.action === 'withdraw' ? '-' : '+' %> $ <%= Math.abs(log.amount).toLocaleString() %>
+                </td>
+              </tr>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="5" style="text-align: center; color: #888; padding: 25px;">ยังไม่มีประวัติรายการเงินกองกลาง</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <canvas id="snowCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;"></canvas>
+
+  <script>
+    // Snow Animation
+    const canvas = document.getElementById('snowCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const particles = [];
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: Math.random() * width, y: Math.random() * height,
+        size: Math.random() * 2 + 1, speedY: Math.random() * 0.8 + 0.3,
+        color: ['#e0aaff', '#c77dff', '#2ed573'][Math.floor(Math.random() * 3)]
+      });
+    }
+
+    function animateSnow() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.y += p.speedY;
+        if (p.y > height) p.y = 0;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color; ctx.fill();
+      });
+      requestAnimationFrame(animateSnow);
+    }
+    animateSnow();
+  </script>
+  <script src="/js/music-player.js"></script>
+</body>
+</html>

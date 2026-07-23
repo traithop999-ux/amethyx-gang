@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMETHYX GANG - สมาชิกทั้งหมด</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+    
+    body {
+      background: #080611;
+      color: #ffffff;
+      min-height: 100vh;
+      padding: 25px 15px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient Background Glow */
+    .bg-glow-1 {
+      position: fixed; width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(157, 78, 221, 0.18) 0%, rgba(0,0,0,0) 70%);
+      top: -15%; left: 20%; filter: blur(80px); z-index: 0; pointer-events: none;
+    }
+    .bg-glow-2 {
+      position: fixed; width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(114, 9, 183, 0.15) 0%, rgba(0,0,0,0) 70%);
+      bottom: -10%; right: 10%; filter: blur(80px); z-index: 0; pointer-events: none;
+    }
+
+    .main-wrapper { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+
+    /* ===================================================
+       HEADER & PREMIUM NAVIGATION BAR 
+       =================================================== */
+    .header-card {
+      background: rgba(18, 14, 32, 0.7);
+      border: 1px solid rgba(157, 78, 221, 0.25);
+      border-radius: 20px;
+      padding: 18px 25px;
+      margin-bottom: 35px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .brand-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      background: linear-gradient(135deg, #ffffff 0%, #c77dff 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
+      line-height: 1.2;
+    }
+
+    .user-welcome {
+      font-size: 0.85rem;
+      color: #a0a0b8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .user-welcome span { color: #e0aaff; font-weight: 600; }
+
+    /* Menu Navigation Grid */
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      text-decoration: none;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03);
+      color: #e0e0e0;
+      backdrop-filter: blur(5px);
+      white-space: nowrap;
+    }
+
+    .nav-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-money { border-color: rgba(46, 213, 115, 0.3); color: #2ed573; }
+    .btn-money:hover { background: rgba(46, 213, 115, 0.12); border-color: #2ed573; box-shadow: 0 0 15px rgba(46, 213, 115, 0.3); }
+
+    .btn-treasury { border-color: rgba(255, 193, 7, 0.3); color: #ffc107; }
+    .btn-treasury:hover { background: rgba(255, 193, 7, 0.12); border-color: #ffc107; box-shadow: 0 0 15px rgba(255, 193, 7, 0.3); }
+
+    .btn-leave { border-color: rgba(255, 71, 87, 0.3); color: #ff4757; }
+    .btn-leave:hover { background: rgba(255, 71, 87, 0.12); border-color: #ff4757; box-shadow: 0 0 15px rgba(255, 71, 87, 0.3); }
+
+    .btn-profile { border-color: rgba(157, 78, 221, 0.4); color: #c77dff; background: rgba(157, 78, 221, 0.1); }
+    .btn-profile:hover { background: rgba(157, 78, 221, 0.25); border-color: #9d4edd; color: #ffffff; box-shadow: 0 0 18px rgba(157, 78, 221, 0.4); }
+
+    .btn-logout { border-color: rgba(255, 255, 255, 0.15); color: #a0a0b8; }
+    .btn-logout:hover { background: rgba(255, 255, 255, 0.1); color: #ffffff; }
+
+    /* ===================================================
+       MEMBERS SECTION & CARDS
+       =================================================== */
+    .section-header {
+      display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 600; color: #e0aaff; margin-bottom: 20px;
+    }
+
+    .members-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 20px;
+    }
+
+    .member-card {
+      background: rgba(18, 14, 32, 0.65); border: 1px solid rgba(157, 78, 221, 0.2); border-radius: 18px; padding: 20px;
+      backdrop-filter: blur(10px); transition: all 0.3s ease; position: relative; overflow: hidden;
+    }
+    .member-card:hover { transform: translateY(-4px); border-color: rgba(157, 78, 221, 0.5); box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); }
+    
+    /* เน้นกรอบให้ Leader */
+    .member-card.card-leader { border: 1px solid rgba(255, 215, 0, 0.3); background: linear-gradient(145deg, rgba(35, 28, 15, 0.7), rgba(18, 14, 32, 0.7)); }
+    .member-card.card-officer { border: 1px solid rgba(0, 212, 255, 0.2); }
+
+    .card-top { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+
+    .avatar { width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid #9d4edd; box-shadow: 0 0 12px rgba(157, 78, 221, 0.4); }
+    .card-leader .avatar { border-color: #ffd700; box-shadow: 0 0 12px rgba(255, 215, 0, 0.4); }
+    .card-officer .avatar { border-color: #00d4ff; box-shadow: 0 0 12px rgba(0, 212, 255, 0.4); }
+
+    .user-info { overflow: hidden; }
+    .user-info h4 { font-size: 1.1rem; color: #ffffff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-info p { font-size: 0.8rem; color: #a0a0b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .role-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 0.72rem; font-weight: 700; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .role-leader { background: rgba(255, 193, 7, 0.2); color: #ffc107; border: 1px solid #ffc107; }
+    .role-officer { background: rgba(0, 184, 148, 0.2); color: #00b894; border: 1px solid #00b894; }
+    .role-member { background: rgba(162, 155, 254, 0.2); color: #a29bfe; border: 1px solid #a29bfe; }
+
+    .card-details { border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 0.85rem; }
+    .detail-item { display: flex; justify-content: space-between; align-items: center; color: #a0a0b8; }
+    .detail-item strong { color: #e0aaff; font-weight: 500; }
+
+    .badge-status { padding: 3px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+    .badge-green { background: rgba(46, 213, 115, 0.15); color: #2ed573; border: 1px solid rgba(46, 213, 115, 0.3); }
+    .badge-red { background: rgba(255, 71, 87, 0.15); color: #ff4757; border: 1px solid rgba(255, 71, 87, 0.3); }
+
+    /* ===================================================
+       RESPONSIVE DESIGN (แก้บัคมือถือ 100%)
+       =================================================== */
+    @media (max-width: 768px) {
+      body { padding: 15px 10px; }
+      
+      .header-card { padding: 15px; flex-direction: column; align-items: stretch; gap: 15px; }
+      .brand-section { justify-content: space-between; width: 100%; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 12px; }
+
+      /* จัดปุ่มในมือถือให้เป็นตาราง 2 คอลัมน์ ไม่เบี้ยว ไม่หลุดจอ */
+      .nav-menu { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; width: 100%; }
+      .nav-btn { padding: 10px 5px; font-size: 0.82rem; width: 100%; }
+      .btn-logout { grid-column: span 2; } /* ออกจากระบบเต็มบรรทัดล่าง */
+
+      .members-grid { grid-template-columns: 1fr; } /* มือถือการ์ดโชว์ 1 แถวต่อคน */
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+
+  <div class="main-wrapper">
+    <!-- Header Navbar -->
+    <div class="header-card">
+      <div class="brand-section">
+        <div>
+          <div class="brand-title"><i class="fa-solid fa-shield-halved"></i> AMETHYX GANG</div>
+          <div class="user-welcome"><i class="fa-regular fa-user"></i> สวัสดี, <span><%= user.displayName || user.username %></span></div>
+        </div>
+      </div>
+
+      <!-- Navigation Menu -->
+      <div class="nav-menu">
+        <a href="/gang-money" class="nav-btn btn-money">
+          <i class="fa-solid fa-file-invoice-dollar"></i> ส่งเงินแก๊ง
+        </a>
+        <a href="/gang-treasury" class="nav-btn btn-treasury">
+          <i class="fa-solid fa-vault"></i> กระเป๋าเงินแก๊ง
+        </a>
+        <a href="/leave" class="nav-btn btn-leave">
+          <i class="fa-regular fa-calendar-minus"></i> ลาแก๊ง
+        </a>
+        <a href="/profile" class="nav-btn btn-profile">
+          <i class="fa-solid fa-user-gear"></i> จัดการโปรไฟล์
+        </a>
+        <a href="/logout" class="nav-btn btn-logout">
+          <i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ
+        </a>
+      </div>
+    </div>
+
+    <!-- Section Title -->
+    <div class="section-header">
+      <i class="fa-solid fa-users"></i> สมาชิกทั้งหมดในแก๊ง (<%= members ? members.length : 0 %>)
+    </div>
+
+    <!-- Members Cards Grid -->
+    <div class="members-grid">
+      <% if (members && members.length > 0) { %>
+        <% members.forEach(m => { %>
+          <div class="member-card <%= m.role === 'Leader' ? 'card-leader' : (m.role === 'Officer' ? 'card-officer' : '') %>">
+            <div class="card-top">
+              <img src="<%= m.customAvatarUrl || m.avatar || 'https://i.imgur.com/6VBx3io.png' %>" class="avatar" alt="Avatar">
+              <div class="user-info">
+                <h4><%= m.displayName || m.username %></h4>
+                <p>
+                  <% if (m.firstName || m.lastName) { %>
+                    <%= m.firstName || '' %> <%= m.lastName || '' %>
+                  <% } else { %>
+                    ไม่ระบุชื่อ IC
+                  <% } %>
+                </p>
+                <span class="role-badge <%= m.role === 'Leader' ? 'role-leader' : (m.role === 'Officer' ? 'role-officer' : 'role-member') %>">
+                  <i class="fa-solid fa-crown" style="font-size: 0.65rem;"></i> <%= m.role || 'MEMBER' %>
+                </span>
+              </div>
+            </div>
+
+            <div class="card-details">
+              <div class="detail-item">
+                <span><i class="fa-solid fa-phone"></i> เบอร์โทรศัพท์:</span>
+                <strong><%= m.phone || '-' %></strong>
+              </div>
+              <div class="detail-item">
+                <span><i class="fa-solid fa-heart"></i> สถานะ:</span>
+                <strong><%= m.relationship || 'โสด' %></strong>
+              </div>
+              <div class="detail-item" style="margin-top: 4px;">
+                <span><i class="fa-solid fa-wallet"></i> สถานะเงินแก๊ง:</span>
+                <% if (m.gangMoney?.status === 'approved') { %>
+                  <span class="badge-status badge-green"><i class="fa-solid fa-check"></i> ส่งเงินแล้ว</span>
+                <% } else if (m.gangMoney?.status === 'pending') { %>
+                  <span class="badge-status" style="background: rgba(255, 193, 7, 0.15); color: #ffc107; border: 1px solid rgba(255, 193, 7, 0.3);"><i class="fa-solid fa-clock"></i> รอตรวจสอบ</span>
+                <% } else { %>
+                  <span class="badge-status badge-red"><i class="fa-solid fa-xmark"></i> ยังไม่ส่งเงิน</span>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <p style="color: #a0a0b8;">ยังไม่มีสมาชิกในแก๊ง</p>
+      <% } %>
+    </div>
+  </div>
+
+  <canvas id="snowCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;"></canvas>
+
+  <script>
+    // Snow Animation
+    const canvas = document.getElementById('snowCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const particles = [];
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: Math.random() * width, y: Math.random() * height,
+        size: Math.random() * 2 + 1, speedY: Math.random() * 0.8 + 0.3,
+        color: ['#e0aaff', '#c77dff', '#9d4edd'][Math.floor(Math.random() * 3)]
+      });
+    }
+
+    function animateSnow() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.y += p.speedY;
+        if (p.y > height) p.y = 0;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color; ctx.fill();
+      });
+      requestAnimationFrame(animateSnow);
+    }
+    animateSnow();
+  </script>
+    <script src="/js/music-player.js"></script>
+</body>
+</html>

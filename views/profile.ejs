@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>จัดการโปรไฟล์ - AMETHYX GANG</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+    body {
+      background: #09070f;
+      color: #ffffff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 15px;
+      position: relative;
+    }
+
+    .bg-glow {
+      position: fixed; width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(123, 44, 191, 0.2) 0%, rgba(0,0,0,0) 70%);
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      filter: blur(80px); z-index: 0; pointer-events: none;
+    }
+
+    .card {
+      position: relative; z-index: 1;
+      background: rgba(20, 16, 33, 0.75);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(157, 78, 221, 0.3);
+      padding: 40px 35px;
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.7), 0 0 25px rgba(157, 78, 221, 0.15);
+      max-width: 520px; width: 100%;
+    }
+
+    .header-section {
+      text-align: center; margin-bottom: 25px;
+    }
+
+    .avatar-wrapper {
+      position: relative; display: inline-block; margin-bottom: 12px;
+    }
+
+    .avatar {
+      width: 110px; height: 110px; border-radius: 50%;
+      object-fit: cover; border: 3px solid #9d4edd;
+      box-shadow: 0 0 20px rgba(157, 78, 221, 0.4);
+    }
+
+    .title {
+      font-size: 1.8rem; font-weight: 700; color: #e0aaff;
+      letter-spacing: 1px; margin-bottom: 4px;
+    }
+
+    .discord-id {
+      color: #8a8a9e; font-size: 0.85rem; background: rgba(255,255,255,0.05);
+      padding: 4px 12px; border-radius: 20px; display: inline-block;
+    }
+
+    .form-group {
+      margin-bottom: 18px; text-align: left;
+    }
+
+    .form-group label {
+      display: block; font-size: 0.9rem; color: #c77dff;
+      margin-bottom: 6px; font-weight: 500;
+    }
+
+    .form-group label i { margin-right: 6px; }
+
+    .input-control, select.input-control {
+      width: 100%; padding: 12px 16px;
+      border-radius: 12px; border: 1px solid rgba(157, 78, 221, 0.25);
+      background: rgba(10, 8, 20, 0.6); color: #fff;
+      font-size: 0.95rem; outline: none; transition: all 0.3s ease;
+    }
+
+    .input-control:focus {
+      border-color: #9d4edd;
+      box-shadow: 0 0 12px rgba(157, 78, 221, 0.4);
+      background: rgba(15, 12, 28, 0.8);
+    }
+
+    .form-row {
+      display: flex; gap: 12px;
+    }
+
+    .btn-submit {
+      width: 100%; background: linear-gradient(135deg, #9d4edd 0%, #7b2cbf 100%);
+      color: white; border: none; padding: 14px; font-size: 1.05rem; font-weight: 600;
+      border-radius: 12px; cursor: pointer; transition: all 0.3s ease;
+      box-shadow: 0 8px 20px rgba(157, 78, 221, 0.3); margin-top: 10px;
+    }
+
+    .btn-submit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 25px rgba(157, 78, 221, 0.5);
+    }
+
+    .footer-actions {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 25px; padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08); font-size: 0.9rem;
+    }
+
+    .link-home { color: #a0a0b8; text-decoration: none; transition: 0.2s; }
+    .link-home:hover { color: #fff; }
+
+    .link-logout { color: #ff5577; text-decoration: none; transition: 0.2s; font-weight: 500; }
+    .link-logout:hover { color: #ff2255; }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <div class="card">
+    <div class="header-section">
+      <div class="avatar-wrapper">
+        <img src="<%= user.customAvatarUrl || user.avatar %>" class="avatar" alt="Profile Avatar">
+      </div>
+      <h2 class="title">โปรไฟล์สมาชิก</h2>
+      <span class="discord-id"><i class="fa-brands fa-discord"></i> <%= user.username %> (<%= user.discordId %>)</span>
+      <div style="margin-top: 8px;">
+        <% if (user.role === 'Leader') { %>
+          <span style="background: rgba(255, 215, 0, 0.2); color: #ffd700; border: 1px solid #ffd700; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">
+            <i class="fa-solid fa-crown"></i> LEADER
+          </span>
+        <% } else if (user.role === 'Officer') { %>
+          <span style="background: rgba(0, 212, 255, 0.2); color: #00d4ff; border: 1px solid #00d4ff; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">
+            <i class="fa-solid fa-shield-halved"></i> OFFICER
+          </span>
+        <% } else { %>
+          <span style="background: rgba(157, 78, 221, 0.2); color: #c77dff; border: 1px solid #9d4edd; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">
+            <i class="fa-solid fa-user"></i> MEMBER
+          </span>
+        <% } %>
+      </div>
+    </div>
+
+    <form action="/profile/update" method="POST">
+      <div class="form-group">
+        <label><i class="fa-solid fa-id-badge"></i> ชื่อที่แสดงบนเว็บ</label>
+        <input type="text" name="displayName" class="input-control" value="<%= user.displayName || '' %>" placeholder="เช่น AMETHYX | Boss" required>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group" style="flex: 1;">
+          <label><i class="fa-solid fa-user"></i> ชื่อจริง</label>
+          <input type="text" name="firstName" class="input-control" value="<%= user.firstName || '' %>" placeholder="ชื่อ">
+        </div>
+        <div class="form-group" style="flex: 1;">
+          <label><i class="fa-solid fa-user"></i> นามสกุล</label>
+          <input type="text" name="lastName" class="input-control" value="<%= user.lastName || '' %>" placeholder="นามสกุล">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group" style="flex: 1.2;">
+          <label><i class="fa-solid fa-phone"></i> เบอร์โทรศัพท์</label>
+          <input type="text" name="phone" class="input-control" value="<%= user.phone || '' %>" placeholder="08X-XXX-XXXX">
+        </div>
+        <div class="form-group" style="flex: 0.8;">
+          <label><i class="fa-solid fa-heart"></i> สถานะ</label>
+          <select name="relationship" class="input-control">
+            <option value="โสด" <%= user.relationship === 'โสด' ? 'selected' : '' %>>โสด</option>
+            <option value="มีแฟนแล้ว" <%= user.relationship === 'มีแฟนแล้ว' ? 'selected' : '' %>>มีแฟนแล้ว</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label><i class="fa-solid fa-user-shield"></i> ตำแหน่งในแก๊ง</label>
+        <select name="role" class="input-control">
+          <option value="Member" <%= (!user.role || user.role === 'Member') ? 'selected' : '' %>>Member</option>
+          <option value="Officer" <%= user.role === 'Officer' ? 'selected' : '' %>>Officer</option>
+          <option value="Leader" <%= user.role === 'Leader' ? 'selected' : '' %>>Leader</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label><i class="fa-solid fa-image"></i> ลิงก์รูปโปรไฟล์ (URL)</label>
+        <input type="url" name="customAvatarUrl" class="input-control" placeholder="https://i.imgur.com/..." value="<%= user.customAvatarUrl || '' %>">
+      </div>
+
+      <button type="submit" class="btn-submit">
+        <i class="fa-solid fa-floppy-disk"></i> บันทึกการเปลี่ยนแปลง
+      </button>
+    </form>
+
+    <div class="footer-actions">
+      <a href="/members" class="link-home"><i class="fa-solid fa-arrow-left"></i> กลับหน้าสมาชิก</a>
+      <a href="/logout" class="link-logout"><i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</a>
+    </div>
+  </div>
+
+  <!-- ================= LMDX ANIMATION & EFFECTS ================= -->
+  <!-- Canvas สำหรับ Snow Particles Background -->
+  <canvas id="snowCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;"></canvas>
+
+  <!-- Circle Glow ตาม Cursor เมาส์ -->
+  <div id="cursorGlow"></div>
+
+  <style>
+    /* Cursor Glow Effect */
+    #cursorGlow {
+      position: fixed;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(157, 78, 221, 0.25) 0%, rgba(0, 0, 0, 0) 70%);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      z-index: 0;
+      transition: width 0.3s, height 0.3s;
+    }
+
+    /* Animation สำหรับการ์ดลอยลอย (Floating Effect) */
+    .container {
+      animation: floatCard 6s ease-in-out infinite;
+      z-index: 1 !important;
+    }
+
+    @keyframes floatCard {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* Glow Effect เมื่อชี้ปุ่ม */
+    .btn-discord, .btn-profile {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-discord::after, .btn-profile::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(60deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transform: rotate(30deg);
+      transition: 0.8s;
+    }
+
+    .btn-discord:hover::after, .btn-profile:hover::after {
+      left: 100%;
+    }
+  </style>
+
+  <script>
+    // ----------------------------------------------------
+    // 1. Snow Effect (หิมะตกสีม่วงเรืองแสง พริ้วๆ)
+    // ----------------------------------------------------
+    const canvas = document.getElementById('snowCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const particles = [];
+    const particleCount = 60; // จำนวนเกล็ดหิมะ
+
+    class Snowflake {
+      constructor() {
+        this.reset();
+      }
+
+      reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * -height;
+        this.size = Math.random() * 3 + 1; // ขนาดเกล็ด
+        this.speedY = Math.random() * 1 + 0.5; // ความเร็วตก
+        this.speedX = Math.random() * 0.6 - 0.3; // ความส่ายซ้ายขวา
+        this.opacity = Math.random() * 0.7 + 0.3;
+        // สุ่มสีม่วงนีออน / สีฟ้าคริสตัล
+        const colors = ['#e0aaff', '#c77dff', '#9d4edd', '#70d6ff'];
+        this.color = colors[Math.floor(Math.random() * colors.length)];
+      }
+
+      update() {
+        this.y += this.speedY;
+        this.x += Math.sin(this.y * 0.01) + this.speedX;
+
+        // ถ้าตกพ้นจอ ให้วนกลับไปด้านบน
+        if (this.y > height) {
+          this.reset();
+          this.y = 0;
+        }
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.globalAlpha = this.opacity;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = this.color;
+        ctx.fill();
+        ctx.closePath();
+      }
+    }
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Snowflake());
+    }
+
+    function animateSnow() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animateSnow);
+    }
+
+    animateSnow();
+
+    // ----------------------------------------------------
+    // 2. Cursor Light Trail (แสงเรืองตามเมาส์)
+    // ----------------------------------------------------
+    const cursorGlow = document.getElementById('cursorGlow');
+    window.addEventListener('mousemove', (e) => {
+      cursorGlow.style.left = e.clientX + 'px';
+      cursorGlow.style.top = e.clientY + 'px';
+    });
+  </script>
+  <script src="/js/music-player.js"></script>
+</body>
+</html>

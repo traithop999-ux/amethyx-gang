@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMETHYX GANG - ระบบลาแก๊ง</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+    body {
+      background: #09070f; color: #ffffff; min-height: 100vh;
+      padding: 40px 20px; overflow-x: hidden; position: relative;
+    }
+
+    .bg-glow-1 {
+      position: fixed; width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(157, 78, 221, 0.25) 0%, rgba(0,0,0,0) 70%);
+      top: -10%; left: 10%; filter: blur(60px); z-index: 0; pointer-events: none;
+    }
+    .bg-glow-2 {
+      position: fixed; width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(114, 9, 183, 0.2) 0%, rgba(0,0,0,0) 70%);
+      bottom: -10%; right: 10%; filter: blur(60px); z-index: 0; pointer-events: none;
+    }
+
+    .main-wrapper { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+
+    .nav-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .btn-back {
+      color: #c77dff; text-decoration: none; font-size: 1rem; font-weight: 500;
+      display: flex; align-items: center; gap: 8px; transition: 0.2s;
+    }
+    .btn-back:hover { color: #ffffff; transform: translateX(-3px); }
+
+    /* Summary Stats Widget */
+    .stats-card {
+      background: linear-gradient(135deg, rgba(157, 78, 221, 0.2), rgba(20, 16, 33, 0.8));
+      border: 1px solid rgba(157, 78, 221, 0.35); border-radius: 20px; padding: 25px 30px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 30px; backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+    .stats-info h2 { font-size: 2.2rem; font-weight: 700; color: #ff5577; }
+    .stats-info p { color: #a0a0b8; font-size: 0.95rem; }
+
+    /* Leave Form Card */
+    .card-box {
+      background: rgba(20, 16, 33, 0.75); border: 1px solid rgba(157, 78, 221, 0.25);
+      border-radius: 20px; padding: 30px; margin-bottom: 35px; backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .title { font-size: 1.4rem; font-weight: 600; color: #e0aaff; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; margin-bottom: 8px; color: #c77dff; font-size: 0.95rem; }
+    .form-control {
+      width: 100%; background: rgba(10, 8, 20, 0.6); border: 1px solid rgba(157, 78, 221, 0.3);
+      padding: 12px 16px; border-radius: 12px; color: white; font-size: 0.95rem; outline: none; transition: 0.3s;
+    }
+    .form-control:focus { border-color: #9d4edd; box-shadow: 0 0 12px rgba(157, 78, 221, 0.4); }
+
+    .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+    .btn-submit {
+      background: linear-gradient(135deg, #ff4757 0%, #ff6b81 100%);
+      color: white; border: none; padding: 14px 25px; border-radius: 12px;
+      font-weight: 600; cursor: pointer; width: 100%; font-size: 1rem;
+      box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3); transition: all 0.3s ease;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255, 71, 87, 0.5); }
+
+    .btn-reset-all {
+      background: linear-gradient(135deg, #ff9f43 0%, #ee5253 100%);
+      color: white; border: none; padding: 9px 16px; border-radius: 10px;
+      font-size: 0.85rem; font-weight: 600; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; transition: all 0.3s ease;
+    }
+    .btn-reset-all:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(238, 82, 83, 0.4); }
+
+    /* Roster Grid */
+    .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+
+    .member-card {
+      background: rgba(20, 16, 33, 0.75); backdrop-filter: blur(12px);
+      border: 1px solid rgba(157, 78, 221, 0.2); border-radius: 20px; padding: 22px;
+      position: relative; overflow: hidden; transition: all 0.3s ease;
+      display: flex; flex-direction: column; gap: 15px;
+    }
+    .member-card.is-leaving-active {
+      border: 1px solid rgba(255, 71, 87, 0.6);
+      background: linear-gradient(145deg, rgba(40, 15, 25, 0.8), rgba(20, 16, 33, 0.8));
+    }
+
+    .card-top { display: flex; align-items: center; gap: 15px; }
+    .member-avatar {
+      width: 60px; height: 60px; border-radius: 50%; object-fit: cover;
+      border: 2px solid #9d4edd; flex-shrink: 0;
+    }
+    .member-info { flex-grow: 1; overflow: hidden; }
+    .member-display-name { font-size: 1.1rem; font-weight: 700; color: #ffffff; }
+
+    /* Badges */
+    .badge-status { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; }
+    .badge-leaving { background: rgba(255, 71, 87, 0.15); color: #ff4757; border: 1px solid #ff4757; }
+    .badge-normal { background: rgba(40, 167, 69, 0.15); color: #28a745; border: 1px solid #28a745; }
+
+    .leave-details {
+      background: rgba(10, 8, 20, 0.5); padding: 12px; border-radius: 10px; font-size: 0.85rem; color: #e0aaff;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+
+  <div class="main-wrapper">
+    <div class="nav-bar">
+      <a href="/members" class="btn-back"><i class="fa-solid fa-arrow-left"></i> กลับหน้าสมาชิก</a>
+    </div>
+
+    <!-- สรุปผลรวมการลาวันนี้ -->
+    <div class="stats-card">
+      <div class="stats-info">
+        <p><i class="fa-solid fa-calendar-day"></i> ยอดสมาชิกที่อยู่ระหว่างลาวันนี้</p>
+        <h2><%= todayLeavingCount %> <span style="font-size: 1.2rem; color: #e0aaff;">คน</span></h2>
+      </div>
+      <i class="fa-solid fa-user-clock" style="font-size: 3.5rem; color: rgba(255, 85, 119, 0.4);"></i>
+    </div>
+
+    <!-- ฟอร์มยื่นเรื่องลา -->
+    <div class="card-box">
+      <div class="title"><i class="fa-solid fa-pen-to-square"></i> ยื่นเรื่องขอลาแก๊ง</div>
+      
+      <form action="/leave/submit" method="POST">
+        <div class="form-group">
+          <label><i class="fa-solid fa-circle-question"></i> เหตุผลการลา / ลาเพราะอะไร</label>
+          <input type="text" name="reason" class="form-control" placeholder="ระบุเหตุผล เช่น ติดภารกิจเรียน, ไปต่างจังหวัด..." required>
+        </div>
+
+        <div class="date-row">
+          <div class="form-group">
+            <label><i class="fa-regular fa-calendar-check"></i> ตั้งแต่วันที่</label>
+            <input type="date" name="startDate" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-regular fa-calendar-xmark"></i> ถึงวันที่</label>
+            <input type="date" name="endDate" class="form-control" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-submit"><i class="fa-solid fa-paper-plane"></i> ยืนยันการยื่นใบลา</button>
+      </form>
+    </div>
+
+    <!-- รายชื่อประวัติการลาของสมาชิกทุกคน -->
+    <div class="card-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+        <div class="title" style="margin-bottom: 0;">
+          <i class="fa-solid fa-users"></i> สถานะการลาของสมาชิกทั้งหมด
+        </div>
+
+        <% if (isOfficerOrLeader) { %>
+          <form action="/leave/reset-count" method="POST" onsubmit="return confirmReset(event)">
+            <button type="submit" class="btn-reset-all">
+              <i class="fa-solid fa-rotate-right"></i> รีเซ็ตจำนวนครั้งการลา (เริ่มสัปดาห์ใหม่)
+            </button>
+          </form>
+        <% } %>
+      </div>
+
+      <div class="roster-grid">
+        <% members.forEach(m => { %>
+          <div class="member-card <%= m.leaveInfo?.isLeavingToday ? 'is-leaving-active' : '' %>">
+            <div class="card-top">
+              <img src="<%= m.customAvatarUrl || m.avatar %>" class="member-avatar">
+              <div class="member-info">
+                <div class="member-display-name"><%= m.displayName || m.username %></div>
+                <div style="margin-top: 4px;">
+                  <% if (m.leaveInfo?.isLeavingToday) { %>
+                    <span class="badge-status badge-leaving"><i class="fa-solid fa-plane-departure"></i> อยู่ระหว่างลา</span>
+                  <% } else { %>
+                    <span class="badge-status badge-normal"><i class="fa-solid fa-user-check"></i> ปกติ (ประจำการ)</span>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+
+            <div style="font-size: 0.85rem; color: #a0a0b8;">
+              <i class="fa-solid fa-clock-rotate-left"></i> ลาสัปดาห์นี้ไปแล้ว: 
+              <strong style="color: #ff9f43;"><%= m.leaveInfo?.leaveCount || 0 %></strong> ครั้ง
+            </div>
+
+            <% if (m.leaveInfo?.reason && m.leaveInfo?.startDate) { %>
+              <div class="leave-details">
+                <div><strong>เหตุผล:</strong> <%= m.leaveInfo.reason %></div>
+                <div style="font-size: 0.8rem; color: #c77dff;">
+                  <i class="fa-regular fa-calendar-days"></i> 
+                  <%= new Date(m.leaveInfo.startDate).toLocaleDateString('th-TH') %> - 
+                  <%= new Date(m.leaveInfo.endDate).toLocaleDateString('th-TH') %>
+                </div>
+              </div>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="snowCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;"></canvas>
+
+  <script>
+    function confirmReset(event) {
+      return confirm("⚠️ คุณแน่ใจหรือไม่ที่จะ 'รีเซ็ตจำนวนครั้งที่ลา' ของสมาชิกทุกคนเป็น 0 ครั้งสำหรับสัปดาห์ใหม่?");
+    }
+
+    // Snow Effect
+    const canvas = document.getElementById('snowCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+    
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const particles = [];
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: Math.random() * width, y: Math.random() * height,
+        size: Math.random() * 2 + 1, speedY: Math.random() * 0.8 + 0.3,
+        color: ['#e0aaff', '#c77dff', '#9d4edd'][Math.floor(Math.random() * 3)]
+      });
+    }
+
+    function animateSnow() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.y += p.speedY;
+        if (p.y > height) p.y = 0;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color; ctx.fill();
+      });
+      requestAnimationFrame(animateSnow);
+    }
+    animateSnow();
+  </script>
+  <script src="/js/music-player.js"></script>
+</body>
+</html>
