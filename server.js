@@ -48,7 +48,7 @@ app.use(session({
 passport.use(new DiscordStrategy({
   clientID: process.env.DISCORD_CLIENT_ID,
   clientSecret: process.env.DISCORD_CLIENT_SECRET,
-  callbackURL: process.env.DISCORD_CALLBACK_URL,
+  callbackURL: process.env.DISCORD_CALLBACK_URL || 'https://amethyx-gang.onrender.com/auth/discord/callback',
   scope: ['identify']
 }, async (accessToken, refreshToken, profile, done) => {
   try {
@@ -138,7 +138,10 @@ app.get('/members', async (req, res) => {
   }
 });
 
-app.get('/auth/discord', passport.authenticate('discord'));
+app.get('/auth/discord', (req, res, next) => {
+  const callbackURL = process.env.DISCORD_CALLBACK_URL || `https://${req.get('host')}/auth/discord/callback`;
+  passport.authenticate('discord', { callbackURL })(req, res, next);
+});
 app.get('/auth/discord/callback', passport.authenticate('discord', {
   failureRedirect: '/'
 }), (req, res) => {
