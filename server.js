@@ -291,7 +291,6 @@ app.get('/gang-money', async (req, res) => {
 
     if (isOfficerOrLeader) {
       const docs = await User.find({});
-
       allSubmissions = docs
         .sort((a, b) => {
           const dateA = a.gangMoney?.updatedAt ? new Date(a.gangMoney.updatedAt).getTime() : 0;
@@ -318,6 +317,25 @@ app.get('/gang-money', async (req, res) => {
           }
           return m;
         });
+    } else {
+      const m = { ...req.user };
+      if (m.gangMoney && m.gangMoney.updatedAt) {
+        const dateObj = new Date(m.gangMoney.updatedAt);
+        m.gangMoney = {
+          ...m.gangMoney,
+          formattedDate: dateObj.toLocaleDateString('th-TH', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: 'Asia/Bangkok'
+          })
+        };
+      } else {
+        m.gangMoney = { ...(m.gangMoney || {}), formattedDate: '-' };
+      }
+      allSubmissions = [m];
     }
 
     res.render('gang-money', {

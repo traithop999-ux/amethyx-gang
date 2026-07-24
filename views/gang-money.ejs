@@ -148,15 +148,14 @@
       </form>
     </div>
 
-    <!-- ส่วนตรวจสลิปสำหรับ Leader & Officer -->
-    <% if (isOfficerOrLeader) { %>
-      <div class="card-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-          <div class="title" style="margin-bottom: 0;">
-            <i class="fa-solid fa-list-check"></i> รายการตรวจสอบเงินแก๊ง
-          </div>
+    <!-- ส่วนตรวจสลิปสำหรับ Leader & Officer หรือแสดงข้อมูลสมาชิกของตัวเอง -->
+    <div class="card-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+        <div class="title" style="margin-bottom: 0;">
+          <i class="fa-solid fa-list-check"></i> รายการตรวจสอบเงินแก๊ง
+        </div>
 
-          <!-- ปุ่มควบคุมจัดการข้อมูล -->
+        <% if (isOfficerOrLeader) { %>
           <div style="display: flex; gap: 10px;">
             <form action="/gang-money/reset-all" method="POST" onsubmit="return confirmReset(event)">
               <button type="submit" class="btn-reset-all">
@@ -170,54 +169,55 @@
               </button>
             </form>
           </div>
-        </div>
+        <% } %>
+      </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th>สมาชิก</th>
-              <th>จำนวนเงิน</th>
-              <th>รูปสลิป</th>
-              <th>วันที่ส่ง (ไทย)</th>
-              <th>สถานะ</th>
-              <th>จัดการ</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% if (allSubmissions && allSubmissions.length > 0) { %>
-              <% allSubmissions.forEach(m => { %>
-                <tr>
-                  <td><strong><%= m.displayName || m.username %></strong></td>
-                  <!-- แสดงจำนวนเงิน ใส่คอมม่าให้สวยงาม -->
-                  <td style="color: #2ed573; font-weight: 600; font-size: 1rem;">
-                    $ <%= (m.gangMoney?.amount || 0).toLocaleString() %>
-                  </td>
-                  <td>
-                    <% if (m.gangMoney?.slipUrl) { %>
-                      <a href="<%= m.gangMoney.slipUrl %>" target="_blank">
-                        <img src="<%= m.gangMoney.slipUrl %>" class="slip-img" title="กดเพื่อดูรูปใหญ่">
-                      </a>
-                    <% } else { %>
-                      <span style="color: #666; font-size: 0.85rem;">ไม่มีรูป</span>
-                    <% } %>
-                  </td>
-                  <td style="color: #c77dff; font-size: 0.88rem;">
-                    <% if (m.gangMoney?.updatedAt) { %>
-                      <i class="fa-regular fa-calendar-days"></i> <%= m.gangMoney.formattedDate %>
-                    <% } else { %>
-                      <span style="color: #666;">-</span>
-                    <% } %>
-                  </td>
-                  <td>
-                    <% if (m.gangMoney?.status === 'pending') { %>
-                      <span class="badge badge-pending"><i class="fa-solid fa-clock"></i> รอตรวจสอบ</span>
-                    <% } else if (m.gangMoney?.status === 'approved') { %>
-                      <span class="badge badge-approved"><i class="fa-solid fa-circle-check"></i> ส่งเงินแล้ว</span>
-                    <% } else { %>
-                      <span class="badge badge-rejected"><i class="fa-solid fa-circle-xmark"></i> ยังไม่ส่งเงิน</span>
-                    <% } %>
-                  </td>
-                  <td>
+      <table>
+        <thead>
+          <tr>
+            <th>สมาชิก</th>
+            <th>จำนวนเงิน</th>
+            <th>รูปสลิป</th>
+            <th>วันที่ส่ง (ไทย)</th>
+            <th>สถานะ</th>
+            <th>จัดการ</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (allSubmissions && allSubmissions.length > 0) { %>
+            <% allSubmissions.forEach(m => { %>
+              <tr>
+                <td><strong><%= m.displayName || m.username %></strong></td>
+                <td style="color: #2ed573; font-weight: 600; font-size: 1rem;">
+                  $ <%= (m.gangMoney?.amount || 0).toLocaleString() %>
+                </td>
+                <td>
+                  <% if (m.gangMoney?.slipUrl) { %>
+                    <a href="<%= m.gangMoney.slipUrl %>" target="_blank">
+                      <img src="<%= m.gangMoney.slipUrl %>" class="slip-img" title="กดเพื่อดูรูปใหญ่">
+                    </a>
+                  <% } else { %>
+                    <span style="color: #666; font-size: 0.85rem;">ไม่มีรูป</span>
+                  <% } %>
+                </td>
+                <td style="color: #c77dff; font-size: 0.88rem;">
+                  <% if (m.gangMoney?.updatedAt) { %>
+                    <i class="fa-regular fa-calendar-days"></i> <%= m.gangMoney.formattedDate %>
+                  <% } else { %>
+                    <span style="color: #666;">-</span>
+                  <% } %>
+                </td>
+                <td>
+                  <% if (m.gangMoney?.status === 'pending') { %>
+                    <span class="badge badge-pending"><i class="fa-solid fa-clock"></i> รอตรวจสอบ</span>
+                  <% } else if (m.gangMoney?.status === 'approved') { %>
+                    <span class="badge badge-approved"><i class="fa-solid fa-circle-check"></i> ส่งเงินแล้ว</span>
+                  <% } else { %>
+                    <span class="badge badge-rejected"><i class="fa-solid fa-circle-xmark"></i> ยังไม่ส่งเงิน</span>
+                  <% } %>
+                </td>
+                <td>
+                  <% if (isOfficerOrLeader) { %>
                     <div class="action-btns">
                       <form action="/gang-money/verify/<%= m.id %>" method="POST">
                         <input type="hidden" name="status" value="approved">
@@ -228,18 +228,20 @@
                         <button type="submit" class="btn-reject" title="ปฏิเสธ"><i class="fa-solid fa-xmark"></i> ไม่ผ่าน</button>
                       </form>
                     </div>
-                  </td>
-                </tr>
-              <% }) %>
-            <% } else { %>
-              <tr>
-                <td colspan="6" style="text-align: center; color: #888; padding: 20px;">ยังไม่มีรายการข้อมูลสมาชิก</td>
+                  <% } else { %>
+                    <span style="color: #999; font-size: 0.9rem;">เฉพาะ Leader/Officer</span>
+                  <% } %>
+                </td>
               </tr>
-            <% } %>
-          </tbody>
-        </table>
-      </div>
-    <% } %>
+            <% }) %>
+          <% } else { %>
+            <tr>
+              <td colspan="6" style="text-align: center; color: #888; padding: 20px;">ยังไม่มีรายการข้อมูลสมาชิก</td>
+            </tr>
+          <% } %>
+        </tbody>
+      </table>
+    </div>
   </div>
 
   <canvas id="snowCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;"></canvas>
