@@ -50,6 +50,18 @@ function initFirebase() {
   initialized = true;
 }
 
+function getAlternateStorageBucketName() {
+  const envBucket = process.env.FIREBASE_STORAGE_BUCKET;
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  if (!projectId) return null;
+
+  const fallbackBucket = `${projectId}.appspot.com`;
+  if (!envBucket) return fallbackBucket;
+  if (envBucket === fallbackBucket) return null;
+  if (envBucket.endsWith('.firebasestorage.app')) return fallbackBucket;
+  return null;
+}
+
 initFirebase();
 
 const firestore = admin.firestore();
@@ -117,14 +129,35 @@ async function writeDatabase(data) {
 }
 
 async function uploadFile(buffer, destinationPath, contentType) {
-  const file = admin.storage().bucket().file(destinationPath);
-  await file.save(buffer, {
-    metadata: {
-      contentType: contentType || 'application/octet-stream'
-    }
-  });
-  await file.makePublic();
+  const defaultBucket = admin.storage().bucket();
+  const file = defaultBucket.file(destinationPath);
 
+  try {
+    await file.save(buffer, {
+      metadata: {
+        contentType: contentType || 'application/octet-stream'
+      }
+    });
+  } catch (err) {
+    const fallbackBucketName = getAlternateStorageBucketName();
+    if (err?.response?.status === 404 && fallbackBucketName) {
+      console.warn(`Default storage bucket not found, retrying upload with fallback bucket: ${fallbackBucketName}`);
+      const fallbackBucket = admin.storage().bucket(fallbackBucketName);
+      const fallbackFile = fallbackBucket.file(destinationPath);
+      await fallbackFile.save(buffer, {
+        metadata: {
+          contentType: contentType || 'application/octet-stream'
+        }
+      });
+      await fallbackFile.makePublic();
+
+      const publicUrl = `https://storage.googleapis.com/${fallbackBucket.name}/${encodeURIComponent(fallbackFile.name)}`;
+      return { publicUrl };
+    }
+    throw err;
+  }
+
+  await file.makePublic();
   const publicUrl = `https://storage.googleapis.com/${file.bucket.name}/${encodeURIComponent(file.name)}`;
   return { publicUrl };
 }

@@ -318,7 +318,8 @@ app.get('/gang-money', async (req, res) => {
           return m;
         });
     } else {
-      const m = { ...req.user };
+      const freshUser = await User.findById(req.user.id);
+      const m = { ...freshUser };
       if (m.gangMoney && m.gangMoney.updatedAt) {
         const dateObj = new Date(m.gangMoney.updatedAt);
         m.gangMoney = {
