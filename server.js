@@ -340,6 +340,10 @@ app.post('/gang-money/upload', upload.single('slipImage'), async (req, res) => {
     }
 
     const amount = req.body.amount ? parseFloat(req.body.amount) : 0;
+    if (!amount || amount <= 0) {
+      return res.redirect('/gang-money?error=invalid_amount');
+    }
+
     const originalName = path.basename(req.file.originalname || 'slip');
     const safeName = originalName.replace(/[^a-zA-Z0-9._-]/g, '_');
     const storagePath = `gang-slips/${req.user.id}/${Date.now()}-${safeName}`;
@@ -347,12 +351,23 @@ app.post('/gang-money/upload', upload.single('slipImage'), async (req, res) => {
     const { publicUrl } = await db.uploadFile(req.file.buffer, storagePath, req.file.mimetype);
 
     await User.findByIdAndUpdate(req.user.id, {
-      'gangMoney.status': 'pending',
+      'gangMoney.status': 'approved',
       'gangMoney.slipUrl': publicUrl,
       'gangMoney.slipStoragePath': storagePath,
       'gangMoney.amount': amount,
       'gangMoney.updatedAt': new Date()
     });
+
+    const treasury = await getOrCreateTreasury();
+    treasury.balance += amount;
+    treasury.logs.push({
+      action: 'deposit',
+      performedBy: `${req.user.displayName || req.user.username}`,
+      amount: amount,
+      reason: 'ฝากเงินแก๊งโดยตรง',
+      createdAt: new Date().toISOString()
+    });
+    await treasury.save();
 
     res.redirect('/gang-money?success=uploaded');
   } catch (err) {
