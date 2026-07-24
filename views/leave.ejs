@@ -178,7 +178,7 @@
               <div class="member-info">
                 <div class="member-display-name"><%= m.displayName || m.username %></div>
                 <div style="margin-top: 4px;">
-                  <% if (m.leaveInfo?.isLeaving || m.leaveInfo?.isLeavingToday) { %>
+                  <% if (m.leaveInfo?.isLeavingToday) { %>
                     <span class="badge-status badge-leaving"><i class="fa-solid fa-plane-departure"></i> อยู่ระหว่างลา</span>
                   <% } else { %>
                     <span class="badge-status badge-normal"><i class="fa-solid fa-user-check"></i> ปกติ (ประจำการ)</span>

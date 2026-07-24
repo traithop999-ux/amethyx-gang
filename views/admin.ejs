@@ -79,6 +79,8 @@
         <div class="data-grid">
           <div class="summary-box"><strong><%= members.length %></strong><span>สมาชิกทั้งหมด</span></div>
           <div class="summary-box"><strong><%= pendingCount %></strong><span>รอยืนยันสลิป</span></div>
+          <div class="summary-box"><strong><%= submittedTodayCount %></strong><span>ส่งเงินแก๊งวันนี้</span></div>
+          <div class="summary-box"><strong><%= leaveTodayCount %></strong><span>ลาแก๊งวันนี้</span></div>
           <div class="summary-box"><strong><%= approvedCount %></strong><span>อนุมัติสลิป</span></div>
           <div class="summary-box"><strong><%= treasury.balance || 0 %> ฿</strong><span>ยอดเงินกองกลาง</span></div>
         </div>
@@ -101,7 +103,13 @@
               <% members.forEach(member => { %>
                 <tr>
                   <td><img src="<%= member.customAvatarUrl || member.avatar %>" alt="avatar" class="user-avatar"></td>
-                  <td><strong><%= member.displayName || member.username %></strong><br><small><%= member.discordId %></small></td>
+                  <td>
+                  <form action="/admin/user/<%= member.id %>/update-name" method="POST" style="display:flex; gap:8px; flex-wrap: wrap; align-items: center;">
+                    <input type="text" name="displayName" value="<%= member.displayName || member.username %>" style="min-width: 160px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 10px; border-radius: 10px;" required>
+                    <button type="submit" class="btn-small"><i class="fa-solid fa-pen"></i> แก้ชื่อ</button>
+                  </form>
+                  <div style="margin-top: 8px; color: #9ca3af; font-size: 0.82rem;">ID: <%= member.discordId %></div>
+                </td>
                   <td>
                     <span class="badge badge-<%= member.role === 'Leader' ? 'leader' : member.role === 'Officer' ? 'officer' : 'member' %>"><%= member.role || 'Member' %></span>
                   </td>

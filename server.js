@@ -198,13 +198,37 @@ app.get('/admin', ensureAdminAuth, async (req, res) => {
     const pendingCount = members.filter(m => m.gangMoney?.status === 'pending').length;
     const approvedCount = members.filter(m => m.gangMoney?.status === 'approved').length;
 
+    const todayInBangkok = toBangkokDateString(new Date());
+    const submittedTodayCount = members.reduce((sum, member) => {
+      const updatedAt = member.gangMoney?.updatedAt ? new Date(member.gangMoney.updatedAt) : null;
+      const amount = Number(member.gangMoney?.amount || 0);
+      if (updatedAt && amount > 0 && toBangkokDateString(updatedAt) === todayInBangkok) {
+        return sum + 1;
+      }
+      return sum;
+    }, 0);
+
+    const leaveTodayCount = members.reduce((sum, member) => {
+      const leaveInfo = member.leaveInfo || {};
+      const start = leaveInfo.startDate ? new Date(leaveInfo.startDate) : null;
+      const end = leaveInfo.endDate ? new Date(leaveInfo.endDate) : null;
+      const startDateInBangkok = start ? toBangkokDateString(start) : null;
+      const endDateInBangkok = end ? toBangkokDateString(end) : null;
+      if (startDateInBangkok && endDateInBangkok && todayInBangkok >= startDateInBangkok && todayInBangkok <= endDateInBangkok) {
+        return sum + 1;
+      }
+      return sum;
+    }, 0);
+
     res.render('admin', {
       user: req.user,
       adminUser: req.session.adminUser,
       members,
       treasury,
       pendingCount,
-      approvedCount
+      approvedCount,
+      submittedTodayCount,
+      leaveTodayCount
     });
   } catch (err) {
     console.error('Admin page error:', err);
@@ -219,6 +243,16 @@ app.post('/admin/user/:id/update-role', ensureAdminAuth, async (req, res) => {
   }
 
   await User.findByIdAndUpdate(req.params.id, { role });
+  res.redirect('/admin');
+});
+
+app.post('/admin/user/:id/update-name', ensureAdminAuth, async (req, res) => {
+  const { displayName } = req.body;
+  if (!displayName || typeof displayName !== 'string') {
+    return res.redirect('/admin');
+  }
+
+  await User.findByIdAndUpdate(req.params.id, { displayName });
   res.redirect('/admin');
 });
 
