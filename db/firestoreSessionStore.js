@@ -1,6 +1,19 @@
 const session = require('express-session');
 const { firestore } = require('./firebase');
 
+function serializeSession(sessionData) {
+  if (!sessionData || typeof sessionData !== 'object') return {};
+  try {
+    return JSON.parse(JSON.stringify(sessionData));
+  } catch {
+    const plain = Object.assign({}, sessionData);
+    if (plain.cookie && typeof plain.cookie.toJSON === 'function') {
+      plain.cookie = plain.cookie.toJSON();
+    }
+    return plain;
+  }
+}
+
 class FirestoreStore extends session.Store {
   constructor(options = {}) {
     super();
@@ -23,7 +36,8 @@ class FirestoreStore extends session.Store {
   async set(sid, sessionData, callback) {
     try {
       const expiresAt = new Date(Date.now() + this.ttl * 1000);
-      await this.collection.doc(sid).set({ session: sessionData, updatedAt: new Date().toISOString(), expiresAt: expiresAt.toISOString() });
+      const sessionPayload = serializeSession(sessionData);
+      await this.collection.doc(sid).set({ session: sessionPayload, updatedAt: new Date().toISOString(), expiresAt: expiresAt.toISOString() });
       callback(null);
     } catch (err) {
       callback(err);
@@ -42,7 +56,8 @@ class FirestoreStore extends session.Store {
   async touch(sid, sessionData, callback) {
     try {
       const expiresAt = new Date(Date.now() + this.ttl * 1000);
-      await this.collection.doc(sid).set({ session: sessionData, updatedAt: new Date().toISOString(), expiresAt: expiresAt.toISOString() }, { merge: true });
+      const sessionPayload = serializeSession(sessionData);
+      await this.collection.doc(sid).set({ session: sessionPayload, updatedAt: new Date().toISOString(), expiresAt: expiresAt.toISOString() }, { merge: true });
       callback(null);
     } catch (err) {
       callback(err);
