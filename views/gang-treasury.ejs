@@ -134,6 +134,7 @@
         <div class="card-box">
           <div class="title"><i class="fa-solid fa-hand-holding-dollar"></i> เบิกเงินแก๊ง</div>
           <form action="/gang-treasury/withdraw" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="form-group">
               <label><i class="fa-solid fa-coins"></i> จำนวนเงินที่เบิก ($)</label>
               <input type="number" name="amount" class="form-control" placeholder="ระบุจำนวนเงิน" min="1" step="any" required>
@@ -150,6 +151,7 @@
         <div class="card-box">
           <div class="title"><i class="fa-solid fa-sliders"></i> ปรับยอดเงินกองกลาง</div>
           <form action="/gang-treasury/adjust" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="form-group">
               <label><i class="fa-solid fa-arrows-up-down"></i> การดำเนินการ</label>
               <select name="type" class="form-control">

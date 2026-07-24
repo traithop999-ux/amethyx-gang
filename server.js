@@ -3,6 +3,10 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const DiscordStrategy = require('passport-discord').Strategy;
+const helmet = require('helmet');
+const csrf = require('csurf');
+const cookieParser = require('cookie-parser');
+const rateLimit = require('express-rate-limit');
 const multer = require('multer');
 const path = require('path');
 const db = require('./db');
@@ -11,6 +15,7 @@ const User = require('./models/User');
 const GangTreasury = require('./models/GangTreasury');
 
 const app = express();
+const isProduction = process.env.NODE_ENV === 'production';
 
 app.set('trust proxy', 1);
 
@@ -50,25 +55,80 @@ function toBangkokDateString(dateValue) {
 
 // View Engine & Middleware
 app.set('view engine', 'ejs');
-app.use(express.urlencoded({ extended: true }));
+app.use(helmet());
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true, limit: '20kb' }));
+app.use(express.json({ limit: '10kb' }));
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
 const sessionStore = new FirestoreSessionStore({ collection: 'sessions', ttl: 86400 });
+const SESSION_SECRET = process.env.SESSION_SECRET;
+if (!SESSION_SECRET) {
+  console.error('SESSION_SECRET is required. Set it in environment variables.');
+  process.exit(1);
+}
+
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'amethyx-session-secret',
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  proxy: true,
+  proxy: isProduction,
   rolling: true,
   store: sessionStore,
   cookie: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: 1000 * 60 * 60 * 24 * 7
   }
 }));
 
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'iso1120111@iso.com';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Love12811243.';
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const ADMIN_AUTH_ENABLED = Boolean(ADMIN_USERNAME && ADMIN_PASSWORD);
+if (!ADMIN_AUTH_ENABLED) {
+  console.warn('Admin credentials are not configured. Admin login is disabled until ADMIN_USERNAME and ADMIN_PASSWORD are set.');
+}
+
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests from this IP, please try again later.'
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many login attempts from this IP, please try again after 15 minutes.'
+});
+
+app.use(generalLimiter);
+app.use('/gang-money/upload', upload.single('slipImage'));
+const csrfProtection = csrf({
+  cookie: {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax'
+  }
+});
+
+app.use(csrfProtection);
+app.use((req, res, next) => {
+  if (typeof req.csrfToken === 'function') {
+    try {
+      res.locals.csrfToken = req.csrfToken();
+    } catch (err) {
+      return next(err);
+    }
+  }
+  next();
+});
 
 function ensureAdminAuth(req, res, next) {
   if (req.session && req.session.isAdmin) return next();
@@ -117,10 +177,6 @@ passport.deserializeUser(async (id, done) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
-// ตั้งค่า Multer สำหรับเก็บรูปภาพในหน่วยความจำ เพื่ออัพโหลดไปยัง Firebase Storage
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
-
 // เสิร์ฟไฟล์ static ใน `public` ทั้งหมด (เช่น css, js, images)
 app.use(express.static(path.join(__dirname, 'public')));
 // สำรองแบบ relative path เพื่อความเข้ากันได้กับสภาพแวดล้อมบางแบบ
@@ -134,7 +190,7 @@ app.get('/', (req, res) => {
   res.render('index');
 });
 
-app.get('/auth/discord', (req, res, next) => {
+app.get('/auth/discord', authLimiter, (req, res, next) => {
   if (req.isAuthenticated()) {
     return res.redirect('/profile');
   }
@@ -169,10 +225,6 @@ app.get('/members', async (req, res) => {
   }
 });
 
-app.get('/auth/discord', passport.authenticate('discord', {
-  scope: ['identify']
-}));
-
 app.get('/auth/discord/callback', (req, res, next) => {
   passport.authenticate('discord', (err, user, info) => {
     if (err) {
@@ -204,10 +256,14 @@ app.get('/profile', (req, res) => {
 
 app.get('/admin/login', (req, res) => {
   if (req.session && req.session.isAdmin) return res.redirect('/admin');
-  res.render('admin-login', { error: req.query.error });
+  res.render('admin-login', { error: req.query.error, adminAuthEnabled: ADMIN_AUTH_ENABLED });
 });
 
-app.post('/admin/login', (req, res) => {
+app.post('/admin/login', authLimiter, (req, res) => {
+  if (!ADMIN_AUTH_ENABLED) {
+    return res.redirect('/admin/login?error=disabled');
+  }
+
   const { username, password } = req.body;
   if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
     req.session.isAdmin = true;
@@ -432,7 +488,7 @@ app.get('/gang-money', async (req, res) => {
   }
 });
 
-app.post('/gang-money/upload', upload.single('slipImage'), async (req, res) => {
+app.post('/gang-money/upload', async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
 
   try {
@@ -788,8 +844,19 @@ app.get('/logout', (req, res) => {
 });
 
 app.use((err, req, res, next) => {
+  if (err.code === 'EBADCSRFTOKEN') {
+    console.warn('CSRF token error:', err);
+    return res.status(403).render('error', {
+      title: 'ข้อผิดพลาด CSRF',
+      message: 'พบปัญหาการยืนยันแบบฟอร์ม กรุณารีเฟรชหน้าและลองอีกครั้ง หรือกลับไปยังหน้าแรก'
+    });
+  }
+
   console.error('Unhandled Express error:', err);
-  res.status(500).send('Internal Server Error');
+  res.status(500).render('error', {
+    title: 'Internal Server Error',
+    message: 'มีข้อผิดพลาดเกิดขึ้นภายในระบบ โปรดลองใหม่อีกครั้งในภายหลัง'
+  });
 });
 
 const PORT = Number(process.env.PORT) || 3000;

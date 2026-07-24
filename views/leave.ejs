@@ -148,6 +148,7 @@
       <div class="title"><i class="fa-solid fa-pen-to-square"></i> ยื่นเรื่องขอลาแก๊ง</div>
       
       <form action="/leave/submit" method="POST">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="form-group">
           <label><i class="fa-solid fa-circle-question"></i> เหตุผลการลา / ลาเพราะอะไร</label>
           <input type="text" name="reason" class="form-control" placeholder="ระบุเหตุผล เช่น ติดภารกิจเรียน, ไปต่างจังหวัด..." required>
@@ -177,6 +178,7 @@
 
         <% if (isOfficerOrLeader) { %>
           <form action="/leave/reset-count" method="POST" onsubmit="return confirmReset(event)">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <button type="submit" class="btn-reset-all">
               <i class="fa-solid fa-rotate-right"></i> รีเซ็ตจำนวนครั้งการลา (เริ่มสัปดาห์ใหม่)
             </button>

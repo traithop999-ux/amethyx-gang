@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { min-height: 100vh; display: flex; justify-content: center; align-items: center; font-family: 'Kanit', sans-serif; background: #09070f; color: #fff; }
+    .card { width: min(100%, 580px); padding: 36px 32px; border-radius: 24px; background: rgba(18, 12, 33, 0.88); border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 24px 60px rgba(0,0,0,0.45); text-align: center; }
+    .title { font-size: 2rem; font-weight: 700; margin-bottom: 18px; color: #f5f3ff; }
+    .message { color: #c8c7d8; font-size: 1rem; line-height: 1.7; margin-bottom: 28px; }
+    .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+    .btn { padding: 12px 22px; border-radius: 999px; text-decoration: none; font-weight: 600; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .btn-primary { background: linear-gradient(135deg, #8b5cf6, #22d3ee); color: #111827; }
+    .btn-secondary { background: rgba(255,255,255,0.08); color: #fff; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(0,0,0,0.18); }
+    .code { margin-top: 16px; color: #9ca3af; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="title"><%= title %></div>
+    <div class="message"><%= message %></div>
+    <div class="actions">
+      <a href="/" class="btn btn-primary">กลับไปหน้าแรก</a>
+      <a href="javascript:window.location.reload();" class="btn btn-secondary">รีเฟรชหน้า</a>
+    </div>
+  </div>
+</body>
+</html>

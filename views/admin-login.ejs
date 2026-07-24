@@ -53,6 +53,7 @@
       <div class="alert">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
     <% } %>
     <form action="/admin/login" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="form-group">
         <label>Username</label>
         <input type="email" name="username" class="input-control" placeholder="iso1120111@iso.com" required>

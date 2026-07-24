@@ -154,6 +154,7 @@
     </div>
 
     <form action="/profile/update" method="POST">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <div class="form-group">
         <label><i class="fa-solid fa-id-badge"></i> ชื่อที่แสดงบนเว็บ</label>
         <input type="text" name="displayName" class="input-control" value="<%= user.displayName || '' %>" placeholder="เช่น AMETHYX | Boss" required>

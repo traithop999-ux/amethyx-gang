@@ -11,6 +11,8 @@ services:
         value: production
       - key: PORT
         value: 3000
+      - key: HOST
+        value: 0.0.0.0
       - key: SESSION_SECRET
         generateValue: true
       - key: DISCORD_CLIENT_ID
@@ -19,3 +21,13 @@ services:
         sync: false
       - key: DISCORD_CALLBACK_URL
         value: https://amethyx-gang.onrender.com/auth/discord/callback
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: FIREBASE_PROJECT_ID
+        value: amethyx-gang
+      - key: FIREBASE_STORAGE_BUCKET
+        value: amethyx-gang.firebasestorage.app
+      - key: FIREBASE_SERVICE_ACCOUNT
+        sync: false
