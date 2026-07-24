@@ -382,12 +382,20 @@ app.post('/gang-money/upload', upload.single('slipImage'), async (req, res) => {
     const safeName = originalName.replace(/[^a-zA-Z0-9._-]/g, '_');
     const storagePath = `gang-slips/${req.user.id}/${Date.now()}-${safeName}`;
 
-    const { publicUrl } = await db.uploadFile(req.file.buffer, storagePath, req.file.mimetype);
+    console.log('gang-money upload start', {
+      userId: req.user.id,
+      amount,
+      storagePath,
+      mimeType: req.file.mimetype
+    });
+
+    const uploadResult = await db.uploadFile(req.file.buffer, storagePath, req.file.mimetype);
+    console.log('gang-money upload result', uploadResult);
 
     const updatedUser = await User.findByIdAndUpdate(req.user.id, {
       'gangMoney.status': 'approved',
-      'gangMoney.slipUrl': publicUrl,
-      'gangMoney.slipStoragePath': storagePath,
+      'gangMoney.slipUrl': uploadResult.publicUrl,
+      'gangMoney.slipStoragePath': uploadResult.source === 'storage' ? storagePath : '',
       'gangMoney.amount': amount,
       'gangMoney.updatedAt': new Date()
     });

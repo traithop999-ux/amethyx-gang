@@ -4,6 +4,7 @@ const path = require('path');
 
 const serviceAccountPath = path.join(__dirname, '..', 'firebase-service-account.json');
 const DEFAULT_FIREBASE_STORAGE_BUCKET = 'amethyx-gang.firebasestorage.app';
+const LOCAL_UPLOADS_ROOT = path.join(__dirname, '..', 'public', 'uploads');
 
 let initialized = false;
 
@@ -60,13 +61,19 @@ function getStorageBucketCandidates() {
     candidates.add(envBucket);
   }
 
-  candidates.add(DEFAULT_FIREBASE_STORAGE_BUCKET);
-
   if (projectId) {
     candidates.add(`${projectId}.appspot.com`);
-    if (`${projectId}.appspot.com` !== DEFAULT_FIREBASE_STORAGE_BUCKET) {
-      candidates.add(`${projectId}.firebasestorage.app`);
-    }
+    candidates.add(`${projectId}.firebasestorage.app`);
+  }
+
+  if (admin?.app && admin.app().options?.storageBucket) {
+    candidates.add(admin.app().options.storageBucket);
+  }
+
+  candidates.add(DEFAULT_FIREBASE_STORAGE_BUCKET);
+
+  if (candidates.size === 0 && projectId) {
+    candidates.add(`${projectId}.appspot.com`);
   }
 
   return Array.from(candidates);
@@ -167,8 +174,27 @@ function createDataUri(buffer, contentType) {
   return `data:${contentType || 'application/octet-stream'};base64,${base64}`;
 }
 
+function ensureLocalUploadsRoot() {
+  if (!fs.existsSync(LOCAL_UPLOADS_ROOT)) {
+    fs.mkdirSync(LOCAL_UPLOADS_ROOT, { recursive: true });
+  }
+}
+
+async function saveLocalUpload(buffer, destinationPath, contentType) {
+  ensureLocalUploadsRoot();
+  const localFilePath = path.join(LOCAL_UPLOADS_ROOT, destinationPath.replace(/\\/g, '/'));
+  const localDir = path.dirname(localFilePath);
+  if (!fs.existsSync(localDir)) {
+    fs.mkdirSync(localDir, { recursive: true });
+  }
+  fs.writeFileSync(localFilePath, buffer);
+  const publicUrl = `/uploads/${destinationPath.replace(/^[\\/]+/, '')}`;
+  return { publicUrl, bucketName: null, storagePath: destinationPath, source: 'local' };
+}
+
 async function uploadFile(buffer, destinationPath, contentType) {
   const bucketCandidates = getStorageBucketCandidates();
+  console.log('uploadFile bucket candidates:', bucketCandidates);
 
   for (const bucketName of bucketCandidates) {
     try {
@@ -188,16 +214,16 @@ async function uploadFile(buffer, destinationPath, contentType) {
 
       await file.makePublic();
       const publicUrl = `https://storage.googleapis.com/${bucket.name}/${encodeURIComponent(file.name)}`;
-      return { publicUrl };
+      console.log(`uploadFile succeeded in bucket ${bucket.name}`, { destinationPath, publicUrl });
+      return { publicUrl, bucketName: bucket.name, storagePath: destinationPath, source: 'storage' };
     } catch (err) {
       console.warn(`Failed to upload with bucket ${bucketName}:`, err?.message || err);
       continue;
     }
   }
 
-  console.warn('All storage bucket candidates failed, using inline data URI fallback');
-  const publicUrl = createDataUri(buffer, contentType || 'application/octet-stream');
-  return { publicUrl };
+  console.warn('All storage bucket candidates failed, saving file locally to public/uploads');
+  return saveLocalUpload(buffer, destinationPath, contentType);
 }
 
 async function deleteFile(destinationPath) {
@@ -219,5 +245,6 @@ module.exports = {
   deleteUserDoc,
   writeTreasuryDoc,
   uploadFile,
-  deleteFile
+  deleteFile,
+  getStorageBucketCandidates
 };
