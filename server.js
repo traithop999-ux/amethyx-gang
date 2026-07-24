@@ -14,6 +14,15 @@ const app = express();
 
 app.set('trust proxy', 1);
 
+const requiredDiscordEnv = [];
+if (!process.env.DISCORD_CLIENT_ID) requiredDiscordEnv.push('DISCORD_CLIENT_ID');
+if (!process.env.DISCORD_CLIENT_SECRET) requiredDiscordEnv.push('DISCORD_CLIENT_SECRET');
+if (!process.env.DISCORD_CALLBACK_URL) requiredDiscordEnv.push('DISCORD_CALLBACK_URL');
+if (requiredDiscordEnv.length > 0) {
+  console.warn('Missing Discord OAuth environment variables:', requiredDiscordEnv.join(', '));
+}
+console.log('Discord callback URL:', process.env.DISCORD_CALLBACK_URL || 'https://amethyx-gang.onrender.com/auth/discord/callback');
+
 // ฟังก์ชันสำหรับดึงหรือสร้างกระเป๋าเงินแก๊ง (ถ้ายังไม่มี)
 async function getOrCreateTreasury() {
   let treasury = await GangTreasury.findOne({});
@@ -67,10 +76,19 @@ function ensureAdminAuth(req, res, next) {
 }
 
 // Passport Strategy setup
+const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
+const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
+const DISCORD_CALLBACK_URL = process.env.DISCORD_CALLBACK_URL || 'https://amethyx-gang.onrender.com/auth/discord/callback';
+
+console.log('Discord OAuth config:', {
+  clientID: DISCORD_CLIENT_ID ? 'set' : 'missing',
+  callbackURL: DISCORD_CALLBACK_URL
+});
+
 passport.use(new DiscordStrategy({
-  clientID: process.env.DISCORD_CLIENT_ID,
-  clientSecret: process.env.DISCORD_CLIENT_SECRET,
-  callbackURL: process.env.DISCORD_CALLBACK_URL || 'https://amethyx-gang.onrender.com/auth/discord/callback',
+  clientID: DISCORD_CLIENT_ID,
+  clientSecret: DISCORD_CLIENT_SECRET,
+  callbackURL: DISCORD_CALLBACK_URL,
   scope: ['identify']
 }, async (accessToken, refreshToken, profile, done) => {
   try {
@@ -110,7 +128,19 @@ app.use(express.static('public'));
 
 // Routes
 app.get('/', (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.redirect('/profile');
+  }
   res.render('index');
+});
+
+app.get('/auth/discord', (req, res, next) => {
+  if (req.isAuthenticated()) {
+    return res.redirect('/profile');
+  }
+  passport.authenticate('discord', {
+    scope: ['identify']
+  })(req, res, next);
 });
 
 app.get('/members', async (req, res) => {
@@ -147,6 +177,9 @@ app.get('/auth/discord/callback', (req, res, next) => {
   passport.authenticate('discord', (err, user, info) => {
     if (err) {
       console.error('Discord callback error:', err);
+      if (err.oauthError && err.oauthError.statusCode === 429) {
+        return res.status(503).send('Discord API ถูกจำกัดการใช้งานชั่วคราว โปรดลองใหม่อีกครั้งหลังจาก 1-5 นาที');
+      }
       return res.status(500).send(`Discord callback error: ${err.message || err}`);
     }
     if (!user) {
