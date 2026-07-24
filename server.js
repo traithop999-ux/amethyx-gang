@@ -134,10 +134,26 @@ app.get('/members', async (req, res) => {
 app.get('/auth/discord', passport.authenticate('discord', {
   scope: ['identify']
 }));
-app.get('/auth/discord/callback', passport.authenticate('discord', {
-  failureRedirect: '/?error=discord',
-  successRedirect: '/profile'
-}));
+
+app.get('/auth/discord/callback', (req, res, next) => {
+  passport.authenticate('discord', (err, user, info) => {
+    if (err) {
+      console.error('Discord callback error:', err);
+      return res.status(500).send(`Discord callback error: ${err.message || err}`);
+    }
+    if (!user) {
+      console.error('Discord callback failed, no user:', info);
+      return res.redirect('/?error=discord');
+    }
+    req.logIn(user, loginErr => {
+      if (loginErr) {
+        console.error('Discord login error:', loginErr);
+        return res.status(500).send(`Login failure: ${loginErr.message || loginErr}`);
+      }
+      return res.redirect('/profile');
+    });
+  })(req, res, next);
+});
 
 // Profile Page
 app.get('/profile', (req, res) => {
