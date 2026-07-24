@@ -50,16 +50,27 @@ function initFirebase() {
   initialized = true;
 }
 
-function getAlternateStorageBucketName() {
+function getStorageBucketCandidates() {
   const envBucket = process.env.FIREBASE_STORAGE_BUCKET;
   const projectId = process.env.FIREBASE_PROJECT_ID;
-  if (!projectId) return null;
+  const candidates = new Set();
 
-  const fallbackBucket = `${projectId}.appspot.com`;
-  if (!envBucket) return fallbackBucket;
-  if (envBucket === fallbackBucket) return null;
-  if (envBucket.endsWith('.firebasestorage.app')) return fallbackBucket;
-  return null;
+  if (envBucket) {
+    candidates.add(envBucket);
+    if (envBucket.endsWith('.firebasestorage.app') && projectId) {
+      candidates.add(`${projectId}.appspot.com`);
+    }
+    if (envBucket.endsWith('.appspot.com') && projectId) {
+      candidates.add(`${projectId}.firebasestorage.app`);
+    }
+  }
+
+  if (projectId) {
+    candidates.add(`${projectId}.appspot.com`);
+    candidates.add(`${projectId}.firebasestorage.app`);
+  }
+
+  return Array.from(candidates);
 }
 
 initFirebase();
@@ -129,37 +140,35 @@ async function writeDatabase(data) {
 }
 
 async function uploadFile(buffer, destinationPath, contentType) {
-  const defaultBucket = admin.storage().bucket();
-  const file = defaultBucket.file(destinationPath);
+  const bucketCandidates = getStorageBucketCandidates();
+  let lastError = null;
 
-  try {
-    await file.save(buffer, {
-      metadata: {
-        contentType: contentType || 'application/octet-stream'
-      }
-    });
-  } catch (err) {
-    const fallbackBucketName = getAlternateStorageBucketName();
-    if (err?.response?.status === 404 && fallbackBucketName) {
-      console.warn(`Default storage bucket not found, retrying upload with fallback bucket: ${fallbackBucketName}`);
-      const fallbackBucket = admin.storage().bucket(fallbackBucketName);
-      const fallbackFile = fallbackBucket.file(destinationPath);
-      await fallbackFile.save(buffer, {
+  for (const bucketName of bucketCandidates) {
+    try {
+      const bucket = admin.storage().bucket(bucketName);
+      const file = bucket.file(destinationPath);
+
+      await file.save(buffer, {
         metadata: {
           contentType: contentType || 'application/octet-stream'
         }
       });
-      await fallbackFile.makePublic();
 
-      const publicUrl = `https://storage.googleapis.com/${fallbackBucket.name}/${encodeURIComponent(fallbackFile.name)}`;
+      await file.makePublic();
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${encodeURIComponent(file.name)}`;
       return { publicUrl };
+    } catch (err) {
+      lastError = err;
+      if (err?.response?.status === 404) {
+        console.warn(`Storage bucket not found: ${bucketName}`);
+        continue;
+      }
+      throw err;
     }
-    throw err;
   }
 
-  await file.makePublic();
-  const publicUrl = `https://storage.googleapis.com/${file.bucket.name}/${encodeURIComponent(file.name)}`;
-  return { publicUrl };
+  console.error('All storage bucket candidates failed:', bucketCandidates, lastError);
+  throw lastError || new Error('Failed to upload file to any Firebase storage bucket');
 }
 
 async function deleteFile(destinationPath) {
