@@ -139,6 +139,11 @@ async function writeDatabase(data) {
   await batch.commit();
 }
 
+function createDataUri(buffer, contentType) {
+  const base64 = buffer.toString('base64');
+  return `data:${contentType || 'application/octet-stream'};base64,${base64}`;
+}
+
 async function uploadFile(buffer, destinationPath, contentType) {
   const bucketCandidates = getStorageBucketCandidates();
   let lastError = null;
@@ -167,11 +172,16 @@ async function uploadFile(buffer, destinationPath, contentType) {
     }
   }
 
-  console.error('All storage bucket candidates failed:', bucketCandidates, lastError);
-  throw lastError || new Error('Failed to upload file to any Firebase storage bucket');
+  console.warn('All storage bucket candidates failed, using inline data URI fallback');
+  const publicUrl = createDataUri(buffer, contentType || 'application/octet-stream');
+  return { publicUrl };
 }
 
 async function deleteFile(destinationPath) {
+  if (!destinationPath || destinationPath.startsWith('data:')) {
+    return;
+  }
+
   const file = admin.storage().bucket().file(destinationPath);
   await file.delete({ ignoreNotFound: true });
 }
