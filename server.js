@@ -64,7 +64,7 @@ app.use(helmet({
       styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com', 'https://cdnjs.cloudflare.com'],
       styleSrcAttr: ["'unsafe-inline'"],
       imgSrc: ["'self'", 'data:', 'https://cdn.discordapp.com', 'https://i.imgur.com'],
-      fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com', 'https://cdnjs.cloudflare.com'],
       connectSrc: ["'self'"],
       frameSrc: ["'self'"],
       objectSrc: ["'none'"],
