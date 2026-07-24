@@ -148,6 +148,20 @@ async function writeDatabase(data) {
   await batch.commit();
 }
 
+async function writeUserDoc(user) {
+  const userRef = usersCollection.doc(String(user.id));
+  await userRef.set(prepareDataForFirestore(user), { merge: true });
+}
+
+async function deleteUserDoc(userId) {
+  const userRef = usersCollection.doc(String(userId));
+  await userRef.delete();
+}
+
+async function writeTreasuryDoc(treasury) {
+  await treasuryDoc.set(prepareDataForFirestore(treasury), { merge: true });
+}
+
 function createDataUri(buffer, contentType) {
   const base64 = buffer.toString('base64');
   return `data:${contentType || 'application/octet-stream'};base64,${base64}`;
@@ -201,6 +215,9 @@ module.exports = {
   bucket: admin.storage().bucket(),
   readDatabase,
   writeDatabase,
+  writeUserDoc,
+  deleteUserDoc,
+  writeTreasuryDoc,
   uploadFile,
   deleteFile
 };

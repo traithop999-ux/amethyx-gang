@@ -1,4 +1,4 @@
-const { readDatabase, writeDatabase } = require('../db');
+const { readDatabase, writeDatabase, writeUserDoc, deleteUserDoc } = require('../db');
 
 function normalizeUserRow(row) {
   if (!row) return null;
@@ -199,16 +199,14 @@ async function findByIdAndUpdate(id, update) {
     }
   }
 
-  await writeDatabase(data);
-  return findById(id);
+    await writeUserDoc(data.users[userIndex]);
+    return findById(id);
 }
 
 async function deleteById(id) {
-  const data = await readDatabase();
-  const userIndex = data.users.findIndex(user => user.id === String(id));
-  if (userIndex === -1) return null;
-  data.users.splice(userIndex, 1);
-  await writeDatabase(data);
+  const user = await findById(id);
+  if (!user) return null;
+  await deleteUserDoc(id);
   return true;
 }
 
@@ -221,7 +219,7 @@ async function create(data) {
   }
 
   dataSet.users.push(row);
-  await writeDatabase(dataSet);
+  await writeUserDoc(row);
   return findById(row.id);
 }
 
@@ -232,6 +230,7 @@ async function updateMany(filter = {}, update = {}) {
 
   for (let i = 0; i < data.users.length; i++) {
     const user = data.users[i];
+    if (!matchesFilter(user, filter)) continue;
 
     if (Object.keys(payload).length > 0) {
       data.users[i] = {
@@ -259,6 +258,7 @@ module.exports = {
   find,
   findById,
   findByIdAndUpdate,
+  deleteById,
   create,
   updateMany
 };

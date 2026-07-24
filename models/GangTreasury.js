@@ -1,4 +1,4 @@
-const { readDatabase, writeDatabase } = require('../db');
+const { readDatabase, writeDatabase, writeTreasuryDoc } = require('../db');
 
 function toIsoString(value) {
   if (!value) return new Date().toISOString();
@@ -22,9 +22,7 @@ function normalizeTreasuryRow(row) {
       createdAt: toIsoString(log.createdAt)
     })) : [],
     async save() {
-      const data = await readDatabase();
-      data.treasury = {
-        ...data.treasury,
+      const treasuryUpdate = {
         id: this.id,
         balance: Number(this.balance || 0),
         logs: Array.isArray(this.logs) ? this.logs.map(log => ({
@@ -33,7 +31,7 @@ function normalizeTreasuryRow(row) {
           createdAt: toIsoString(log.createdAt)
         })) : []
       };
-      await writeDatabase(data);
+      await writeTreasuryDoc(treasuryUpdate);
       return this;
     }
   };

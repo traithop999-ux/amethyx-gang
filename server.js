@@ -392,9 +392,14 @@ app.post('/gang-money/upload', upload.single('slipImage'), async (req, res) => {
       'gangMoney.updatedAt': new Date()
     });
 
-    if (updatedUser && req.logIn) {
-      req.logIn(updatedUser, err => {
-        if (err) console.warn('Failed to refresh session user after upload:', err);
+    if (updatedUser && typeof req.logIn === 'function') {
+      await new Promise((resolve, reject) => {
+        req.logIn(updatedUser, err => {
+          if (err) return reject(err);
+          resolve();
+        });
+      }).catch(err => {
+        console.warn('Failed to refresh session user after upload:', err);
       });
     }
 
