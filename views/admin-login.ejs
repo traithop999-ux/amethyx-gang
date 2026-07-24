@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - AMETHYX GANG</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+    body { background: #02030a; min-height: 100vh; color: #fff; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+    .bg-shape {
+      position: absolute; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(123, 44, 191, 0.35) 0%, rgba(0,0,0,0) 70%);
+      top: 10%; left: 10%; filter: blur(80px);
+    }
+    .bg-shape-right {
+      position: absolute; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(circle, rgba(59, 130, 246, 0.24) 0%, rgba(0,0,0,0) 70%);
+      bottom: 8%; right: 8%; filter: blur(100px);
+    }
+    .card { position: relative; z-index: 1; width: min(540px, 95%); background: rgba(12, 9, 24, 0.8); border: 1px solid rgba(157, 78, 221, 0.25); border-radius: 28px; box-shadow: 0 20px 80px rgba(0,0,0,0.5); padding: 42px 36px; backdrop-filter: blur(18px); }
+    .brand-title { font-size: 2.2rem; line-height: 1.1; background: linear-gradient(135deg, #c77dff 0%, #6b46c1 100%); -webkit-background-clip: text; color: transparent; margin-bottom: 8px; }
+    .subtitle { color: #b5a5d5; font-size: 0.95rem; margin-bottom: 30px; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; color: #d8c9ff; margin-bottom: 8px; font-size: 0.94rem; font-weight: 500; }
+    .input-control { width: 100%; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(157, 78, 221, 0.2); background: rgba(13, 10, 23, 0.65); color: #f8f7ff; outline: none; transition: all 0.25s ease; }
+    .input-control:focus { border-color: #a855f7; box-shadow: 0 0 16px rgba(168, 85, 247, 0.2); }
+    .btn-submit { width: 100%; padding: 14px; border-radius: 16px; border: none; background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%); color: #fff; font-size: 1rem; letter-spacing: 0.02em; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; box-shadow: 0 12px 28px rgba(124, 58, 237, 0.2); }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 16px 32px rgba(124, 58, 237, 0.32); }
+    .alert { margin-bottom: 20px; padding: 14px 16px; border-radius: 16px; background: rgba(229, 62, 62, 0.12); color: #ffb3b3; border: 1px solid rgba(229, 62, 62, 0.2); }
+    .snow-container { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  </style>
+</head>
+<body>
+  <div class="bg-shape"></div>
+  <div class="bg-shape-right"></div>
+  <div class="snow-container" id="snowContainer"></div>
+
+  <div class="card">
+    <h1 class="brand-title">Admin Login</h1>
+    <p class="subtitle">เข้าสู่ระบบหลังบ้านเพื่อจัดการสมาชิกและการเงินของแก๊ง</p>
+    <% if (error === 'invalid') { %>
+      <div class="alert">ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง</div>
+    <% } %>
+    <form action="/admin/login" method="POST">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="email" name="username" class="input-control" placeholder="iso1120111@iso.com" required>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" class="input-control" placeholder="••••••••••••" required>
+      </div>
+      <button type="submit" class="btn-submit">เข้าสู่ระบบ</button>
+    </form>
+  </div>
+
+  <script>
+    const snowContainer = document.getElementById('snowContainer');
+    for (let i = 0; i < 28; i++) {
+      const dot = document.createElement('div');
+      dot.style.position = 'absolute';
+      dot.style.left = Math.random() * 100 + '%';
+      dot.style.top = Math.random() * 100 + '%';
+      dot.style.width = Math.random() * 4 + 4 + 'px';
+      dot.style.height = dot.style.width;
+      dot.style.borderRadius = '50%';
+      dot.style.background = 'rgba(255,255,255,0.75)';
+      dot.style.opacity = Math.random() * 0.4 + 0.3;
+      dot.style.filter = 'blur(0.5px)';
+      dot.style.animation = `fall ${Math.random() * 10 + 8}s linear infinite`;
+      dot.style.animationDelay = Math.random() * 5 + 's';
+      snowContainer.appendChild(dot);
+    }
+  </script>
+  <style>
+    @keyframes fall { 0% { transform: translateY(-10px); } 100% { transform: translateY(110vh); } }
+  </style>
+</body>
+</html>

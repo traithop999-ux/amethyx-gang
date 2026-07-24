@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - AMETHYX GANG</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+    body { background: #07090f; color: #f7f7ff; min-height: 100vh; position: relative; overflow-x: hidden; }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(120, 79, 255, 0.18), transparent 25%),
+                  radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.14), transparent 30%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .page-shell { position: relative; z-index: 1; padding: 30px 24px 80px; max-width: 1320px; margin: 0 auto; }
+    .header-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px; align-items: center; margin-bottom: 28px; }
+    .header-title { font-size: clamp(2.1rem, 2.4vw, 3rem); font-weight: 800; letter-spacing: 0.02em; }
+    .header-sub { color: #a7a1c8; margin-top: 8px; }
+    .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border-radius: 999px; background: rgba(99, 102, 241, 0.15); color: #c7d2fe; font-weight: 600; }
+    .admin-actions { display: inline-flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .btn-action { display: inline-flex; align-items: center; gap: 10px; border: none; border-radius: 14px; padding: 12px 18px; background: linear-gradient(135deg, rgba(123, 44, 191, 0.18), rgba(59, 130, 246, 0.18)); color: #eef2ff; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .btn-action:hover { transform: translateY(-2px); box-shadow: 0 20px 45px rgba(99, 102, 241, 0.12); }
+    .grid-layout { display: grid; grid-template-columns: repeat(12, 1fr); gap: 22px; }
+    .card { position: relative; background: rgba(15, 12, 26, 0.88); border: 1px solid rgba(126, 34, 206, 0.18); border-radius: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.35); padding: 26px; overflow: hidden; }
+    .card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(124, 58, 237, 0.14), transparent 35%); pointer-events: none; }
+    .card h3 { position: relative; margin-bottom: 16px; font-size: 1.2rem; z-index: 1; }
+    .card p { color: #b9b5d9; line-height: 1.7; position: relative; z-index: 1; }
+    .data-grid { display: grid; gap: 16px; }
+    .summary-box { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-radius: 22px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(10px); }
+    .summary-box strong { font-size: 1.4rem; color: #fff; }
+    .summary-box span { color: #b7b1d7; }
+    .table-scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 900px; }
+    th, td { text-align: left; padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    th { font-size: 0.85rem; color: #9da3cc; text-transform: uppercase; letter-spacing: 0.08em; }
+    td { color: #ece9ff; vertical-align: middle; }
+    .user-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(157, 78, 221, 0.3); }
+    .badge { display: inline-flex; padding: 6px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.03em; }
+    .badge-member { background: rgba(168, 85, 247, 0.14); color: #d6bbff; }
+    .badge-officer { background: rgba(14, 165, 233, 0.14); color: #93c5fd; }
+    .badge-leader { background: rgba(250, 204, 21, 0.16); color: #fde68a; }
+    .btn-small { display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #eef2ff; font-size: 0.82rem; cursor: pointer; transition: background 0.2s ease; }
+    .btn-small:hover { background: rgba(255,255,255,0.08); }
+    .panel-grid { display: grid; gap: 18px; }
+    .form-inline { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+    .form-inline select, .form-inline button { flex: 1; }
+    .form-inline select { min-width: 180px; }
+    .section-title { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; color: #e0d7ff; }
+    .section-title i { color: #be9bff; }
+    .status-chip { padding: 6px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .status-pending { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+    .status-approved { background: rgba(34, 197, 94, 0.13); color: #86efac; }
+    .status-none { background: rgba(148, 163, 184, 0.14); color: #cbd5e1; }
+    .footer-note { margin-top: 20px; color: #8b87b3; font-size: 0.92rem; }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <div class="header-top">
+      <div>
+        <h1 class="header-title">Admin Dashboard</h1>
+        <p class="header-sub">จัดการสมาชิกทั้งหมด ยศตำแหน่ง และประวัติการเงิน</p>
+      </div>
+      <div class="admin-actions">
+        <span class="status-pill"><i class="fa-solid fa-user-shield"></i> Admin: <%= adminUser %></span>
+        <a href="/admin/logout" class="btn-action"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+      </div>
+    </div>
+
+    <div class="grid-layout">
+      <div class="card" style="grid-column: span 4;">
+        <h3>สรุปสถานะ</h3>
+        <div class="data-grid">
+          <div class="summary-box"><strong><%= members.length %></strong><span>สมาชิกทั้งหมด</span></div>
+          <div class="summary-box"><strong><%= pendingCount %></strong><span>รอยืนยันสลิป</span></div>
+          <div class="summary-box"><strong><%= approvedCount %></strong><span>อนุมัติสลิป</span></div>
+          <div class="summary-box"><strong><%= treasury.balance || 0 %> ฿</strong><span>ยอดเงินกองกลาง</span></div>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: span 8;">
+        <div class="section-title"><i class="fa-solid fa-layer-group"></i><span>จัดการสมาชิก</span></div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>โปรไฟล์</th>
+                <th>ชื่อ</th>
+                <th>ตำแหน่ง</th>
+                <th>สถานะเงิน</th>
+                <th>จัดการ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% members.forEach(member => { %>
+                <tr>
+                  <td><img src="<%= member.customAvatarUrl || member.avatar %>" alt="avatar" class="user-avatar"></td>
+                  <td><strong><%= member.displayName || member.username %></strong><br><small><%= member.discordId %></small></td>
+                  <td>
+                    <span class="badge badge-<%= member.role === 'Leader' ? 'leader' : member.role === 'Officer' ? 'officer' : 'member' %>"><%= member.role || 'Member' %></span>
+                  </td>
+                  <td>
+                    <% if (member.gangMoney?.status === 'pending') { %>
+                      <span class="status-chip status-pending">Pending</span>
+                    <% } else if (member.gangMoney?.status === 'approved') { %>
+                      <span class="status-chip status-approved">Approved</span>
+                    <% } else { %>
+                      <span class="status-chip status-none">Not Submitted</span>
+                    <% } %>
+                  </td>
+                  <td>
+                    <form action="/admin/user/<%= member.id %>/update-role" method="POST" style="display:inline-flex; gap: 8px; align-items:center;">
+                      <select name="role" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #fff; padding: 8px 10px; border-radius: 10px;">
+                        <option value="Member" <%= member.role === 'Member' ? 'selected' : '' %>>Member</option>
+                        <option value="Officer" <%= member.role === 'Officer' ? 'selected' : '' %>>Officer</option>
+                        <option value="Leader" <%= member.role === 'Leader' ? 'selected' : '' %>>Leader</option>
+                      </select>
+                      <button type="submit" class="btn-small"><i class="fa-solid fa-pen"></i> เปลี่ยน</button>
+                    </form>
+                    <form action="/admin/user/<%= member.id %>/delete" method="POST" style="display:inline-block; margin-top: 8px;">
+                      <button type="submit" class="btn-small" style="background: rgba(242, 153, 74, 0.16); border-color: rgba(252, 211, 77, 0.2); color: #fee2e2;">
+                        <i class="fa-solid fa-trash"></i> ลบ
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="grid-column: span 4;">
+        <div class="section-title"><i class="fa-solid fa-wallet"></i><span>การเงินแก๊ง</span></div>
+        <p>ยอดเงินปัจจุบัน</p>
+        <div class="summary-box" style="margin-top: 16px;"><strong><%= treasury.balance || 0 %> ฿</strong><span>ยอดเงินคงเหลือ</span></div>
+        <form action="/admin/treasury/clear-logs" method="POST" style="margin-top: 20px;">
+          <button type="submit" class="btn-action"><i class="fa-solid fa-broom"></i> ล้างประวัติการเงิน</button>
+        </form>
+      </div>
+
+      <div class="card" style="grid-column: span 8;">
+        <div class="section-title"><i class="fa-solid fa-money-bill-trend-up"></i><span>จัดการสถานะเงิน</span></div>
+        <p>รีเซ็ตสถานะสลิปทั้งหมดและส่งสมาชิกกลับไปยังสถานะไม่ได้ส่ง</p>
+        <form action="/admin/users/reset-submissions" method="POST">
+          <button type="submit" class="btn-action"><i class="fa-solid fa-rotate-left"></i> รีเซ็ตประวัติการส่งเงินทั้งหมด</button>
+        </form>
+      </div>
+    </div>
+    <p class="footer-note">* ระบบหลังบ้านรองรับการเปลี่ยนตำแหน่ง, ลบสมาชิก, และจัดการประวัติการเงินทั้งหมด</p>
+  </div>
+</body>
+</html>

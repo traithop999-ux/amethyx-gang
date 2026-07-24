@@ -203,6 +203,15 @@ async function findByIdAndUpdate(id, update) {
   return findById(id);
 }
 
+async function deleteById(id) {
+  const data = await readDatabase();
+  const userIndex = data.users.findIndex(user => user.id === String(id));
+  if (userIndex === -1) return null;
+  data.users.splice(userIndex, 1);
+  await writeDatabase(data);
+  return true;
+}
+
 async function create(data) {
   const dataSet = await readDatabase();
   const row = buildUserInsert(data);

@@ -58,6 +58,14 @@ app.use(session({
   }
 }));
 
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'iso1120111@iso.com';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Love12811243.';
+
+function ensureAdminAuth(req, res, next) {
+  if (req.session && req.session.isAdmin) return next();
+  return res.redirect('/admin/login');
+}
+
 // Passport Strategy setup
 passport.use(new DiscordStrategy({
   clientID: process.env.DISCORD_CLIENT_ID,
@@ -159,6 +167,100 @@ app.get('/auth/discord/callback', (req, res, next) => {
 app.get('/profile', (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
   res.render('profile', { user: req.user });
+});
+
+app.get('/admin/login', (req, res) => {
+  if (req.session && req.session.isAdmin) return res.redirect('/admin');
+  res.render('admin-login', { error: req.query.error });
+});
+
+app.post('/admin/login', (req, res) => {
+  const { username, password } = req.body;
+  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    req.session.isAdmin = true;
+    req.session.adminUser = username;
+    return res.redirect('/admin');
+  }
+
+  return res.redirect('/admin/login?error=invalid');
+});
+
+app.get('/admin/logout', ensureAdminAuth, (req, res) => {
+  req.session.isAdmin = false;
+  delete req.session.adminUser;
+  res.redirect('/admin/login');
+});
+
+app.get('/admin', ensureAdminAuth, async (req, res) => {
+  try {
+    const members = await User.find({});
+    const treasury = await getOrCreateTreasury();
+    const pendingCount = members.filter(m => m.gangMoney?.status === 'pending').length;
+    const approvedCount = members.filter(m => m.gangMoney?.status === 'approved').length;
+
+    res.render('admin', {
+      user: req.user,
+      adminUser: req.session.adminUser,
+      members,
+      treasury,
+      pendingCount,
+      approvedCount
+    });
+  } catch (err) {
+    console.error('Admin page error:', err);
+    res.status(500).send('ไม่สามารถโหลดหน้า Admin ได้');
+  }
+});
+
+app.post('/admin/user/:id/update-role', ensureAdminAuth, async (req, res) => {
+  const { role } = req.body;
+  if (!['Member', 'Officer', 'Leader'].includes(role)) {
+    return res.redirect('/admin');
+  }
+
+  await User.findByIdAndUpdate(req.params.id, { role });
+  res.redirect('/admin');
+});
+
+app.post('/admin/user/:id/delete', ensureAdminAuth, async (req, res) => {
+  try {
+    const targetUser = await User.findById(req.params.id);
+    if (targetUser?.gangMoney?.slipStoragePath) {
+      await db.deleteFile(targetUser.gangMoney.slipStoragePath);
+    }
+    await User.deleteById(req.params.id);
+  } catch (err) {
+    console.error('Admin delete user error:', err);
+  }
+  res.redirect('/admin');
+});
+
+app.post('/admin/treasury/clear-logs', ensureAdminAuth, async (req, res) => {
+  try {
+    const treasury = await getOrCreateTreasury();
+    treasury.logs = [];
+    await treasury.save();
+  } catch (err) {
+    console.error('Admin clear treasury logs error:', err);
+  }
+  res.redirect('/admin');
+});
+
+app.post('/admin/users/reset-submissions', ensureAdminAuth, async (req, res) => {
+  try {
+    await User.updateMany({}, {
+      $set: {
+        'gangMoney.status': 'not_submitted',
+        'gangMoney.slipUrl': '',
+        'gangMoney.amount': 0,
+        'gangMoney.updatedAt': null,
+        'gangMoney.slipStoragePath': ''
+      }
+    });
+  } catch (err) {
+    console.error('Admin reset submissions error:', err);
+  }
+  res.redirect('/admin');
 });
 
 // Update Profile Action
