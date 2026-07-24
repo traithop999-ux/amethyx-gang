@@ -174,11 +174,8 @@
 
       <div class="form-group">
         <label><i class="fa-solid fa-user-shield"></i> ตำแหน่งในแก๊ง</label>
-        <select name="role" class="input-control">
-          <option value="Member" <%= (!user.role || user.role === 'Member') ? 'selected' : '' %>>Member</option>
-          <option value="Officer" <%= user.role === 'Officer' ? 'selected' : '' %>>Officer</option>
-          <option value="Leader" <%= user.role === 'Leader' ? 'selected' : '' %>>Leader</option>
-        </select>
+        <input type="text" class="input-control" value="Member" readonly>
+        <small style="display:block; margin-top:6px; color:#b7b2dd;">ตำแหน่งอื่นจะถูกกำหนดโดยแอดมิน</small>
       </div>
 
       <div class="form-group">

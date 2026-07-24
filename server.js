@@ -267,7 +267,7 @@ app.post('/admin/users/reset-submissions', ensureAdminAuth, async (req, res) => 
 app.post('/profile/update', async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
 
-  const { displayName, firstName, lastName, phone, relationship, role, customAvatarUrl } = req.body;
+  const { displayName, firstName, lastName, phone, relationship, customAvatarUrl } = req.body;
 
   await User.findByIdAndUpdate(req.user.id, {
     displayName,
@@ -275,7 +275,6 @@ app.post('/profile/update', async (req, res) => {
     lastName,
     phone,
     relationship,
-    role: role || 'Member',
     customAvatarUrl
   });
 
