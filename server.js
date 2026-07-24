@@ -152,14 +152,27 @@ passport.use(new DiscordStrategy({
   scope: ['identify']
 }, async (accessToken, refreshToken, profile, done) => {
   try {
+    const avatarUrl = profile.avatar
+      ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png`
+      : 'https://cdn.discordapp.com/embed/avatars/0.png';
+
     let user = await User.findOne({ discordId: profile.id });
     if (!user) {
       user = await User.create({
         discordId: profile.id,
         username: profile.username,
-        avatar: profile.avatar ? `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png',
+        avatar: avatarUrl,
         displayName: profile.username
       });
+    } else {
+      const needsUpdate = !user.avatar || user.avatar !== avatarUrl || user.displayName !== profile.username || user.username !== profile.username;
+      if (needsUpdate) {
+        user = await User.findByIdAndUpdate(user.id, {
+          username: profile.username,
+          avatar: avatarUrl,
+          displayName: profile.username
+        });
+      }
     }
     return done(null, user);
   } catch (err) {

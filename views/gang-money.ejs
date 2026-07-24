@@ -171,7 +171,7 @@
           <input type="number" id="amountInput" name="amount" class="form-control" placeholder="ระบุจำนวนเงิน เช่น 50000" min="0" step="any" required>
         </div>
 
-        <label for="slipInput" class="file-input-group">
+        <label for="slipInput" class="file-input-group" aria-label="เลือกไฟล์สลิป">
           <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.8rem; color: #9d4edd; margin-bottom: 12px;"></i>
           <p id="fileNameText" style="color: #e0aaff; font-size: 1rem;">กดเพื่อเลือกรูปภาพสลิปจากเครื่องของคุณ</p>
           <input type="file" id="slipInput" name="slipImage" accept="image/*" required onchange="updateFileName(this)">
@@ -286,10 +286,23 @@
 
   <script>
     function updateFileName(input) {
+      const fileNameText = document.getElementById('fileNameText');
+      if (!fileNameText) return;
       if (input.files && input.files[0]) {
-        document.getElementById('fileNameText').innerHTML = "<i class='fa-solid fa-file-image'></i> เลือกไฟล์แล้ว: <strong>" + input.files[0].name + "</strong>";
+        fileNameText.innerHTML = "<i class='fa-solid fa-file-image'></i> เลือกไฟล์แล้ว: <strong>" + input.files[0].name + "</strong>";
+      } else {
+        fileNameText.innerHTML = "กดเพื่อเลือกรูปภาพสลิปจากเครื่องของคุณ";
       }
     }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const slipInput = document.getElementById('slipInput');
+      if (slipInput) {
+        slipInput.addEventListener('change', function () {
+          updateFileName(this);
+        });
+      }
+    });
 
     function confirmReset(event) {
       return confirm("⚠️ คุณแน่ใจหรือไม่ที่จะ 'รีเซ็ตสถานะ' เป็นยังไม่ส่งเงินสำหรับเริ่มต้นสัปดาห์ใหม่?");

@@ -132,7 +132,9 @@
   <div class="card">
     <div class="header-section">
       <div class="avatar-wrapper">
-        <img src="<%= user.customAvatarUrl || user.avatar %>" class="avatar" alt="Profile Avatar">
+        <img src="<%= user.customAvatarUrl || user.avatar || 'https://i.imgur.com/6VBx3io.png' %>"
+             onerror="this.onerror=null;this.src='https://i.imgur.com/6VBx3io.png'"
+             class="avatar" alt="Profile Avatar">
       </div>
       <h2 class="title">โปรไฟล์สมาชิก</h2>
       <span class="discord-id"><i class="fa-brands fa-discord"></i> <%= user.username %> (<%= user.discordId %>)</span>

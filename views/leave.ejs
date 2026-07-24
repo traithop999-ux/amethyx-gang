@@ -190,7 +190,9 @@
         <% members.forEach(m => { %>
           <div class="member-card <%= m.leaveInfo?.isLeavingToday ? 'is-leaving-active' : '' %>">
             <div class="card-top">
-              <img src="<%= m.customAvatarUrl || m.avatar %>" class="member-avatar">
+              <img src="<%= m.customAvatarUrl || m.avatar || 'https://i.imgur.com/6VBx3io.png' %>"
+                   onerror="this.onerror=null;this.src='https://i.imgur.com/6VBx3io.png'"
+                   class="member-avatar" alt="Avatar">
               <div class="member-info">
                 <div class="member-display-name"><%= m.displayName || m.username %></div>
                 <div style="margin-top: 4px;">
