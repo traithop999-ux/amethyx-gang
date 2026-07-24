@@ -10,3 +10,5 @@ build/
 .idea/
 *.swp
 *.swo
+# Ignore local Firebase service account JSON if stored in project root
+*firebase-adminsdk*.json

@@ -1,13 +1,12 @@
 require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
-const FileStore = require('session-file-store')(session);
 const passport = require('passport');
 const DiscordStrategy = require('passport-discord').Strategy;
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
-const db = require('./db/json');
+const db = require('./db');
+const FirestoreSessionStore = require('./db/firestoreSessionStore');
 const User = require('./models/User');
 const GangTreasury = require('./models/GangTreasury');
 
@@ -23,8 +22,6 @@ async function getOrCreateTreasury() {
   }
   return treasury;
 }
-
-// JSON database initialization is handled in ./db/json.js
 
 function toBangkokDateString(dateValue) {
   const date = dateValue instanceof Date ? dateValue : new Date(dateValue);
@@ -45,16 +42,11 @@ function toBangkokDateString(dateValue) {
 // View Engine & Middleware
 app.set('view engine', 'ejs');
 app.use(express.urlencoded({ extended: true }));
-const sessionStore = new FileStore({
-  path: path.join(__dirname, 'sessions'),
-  ttl: 86400,
-  retries: 5,
-  logFn: () => {}
-});
+const sessionStore = new FirestoreSessionStore({ collection: 'sessions', ttl: 86400 });
 app.use(session({
   secret: process.env.SESSION_SECRET || 'amethyx-session-secret',
-  resave: true,
-  saveUninitialized: true,
+  resave: false,
+  saveUninitialized: false,
   proxy: true,
   rolling: true,
   store: sessionStore,
@@ -99,28 +91,9 @@ passport.deserializeUser(async (id, done) => {
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 1. ตรวจสอบและสร้างโฟลเดอร์ public/uploads อัตโนมัติถ้ายังไม่มี
-const uploadDir = path.join(__dirname, 'public', 'uploads');
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// 2. ตั้งค่า Multer สำหรับเก็บรูปภาพ
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
-    cb(null, 'slip-' + req.user.id + '-' + uniqueSuffix + ext);
-  }
-});
-
-const upload = multer({ storage: storage });
-
-// เสิร์ฟโฟลเดอร์ static เพื่อให้ดึงรูปมาแสดงบนเว็บได้
-app.use('/uploads', express.static(uploadDir));
+// ตั้งค่า Multer สำหรับเก็บรูปภาพในหน่วยความจำ เพื่ออัพโหลดไปยัง Firebase Storage
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 // เสิร์ฟไฟล์ static ใน `public` ทั้งหมด (เช่น css, js, images)
 app.use(express.static(path.join(__dirname, 'public')));
@@ -250,11 +223,16 @@ app.post('/gang-money/upload', upload.single('slipImage'), async (req, res) => {
     }
 
     const amount = req.body.amount ? parseFloat(req.body.amount) : 0;
-    const slipPath = `/uploads/${req.file.filename}`;
+    const originalName = path.basename(req.file.originalname || 'slip');
+    const safeName = originalName.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storagePath = `gang-slips/${req.user.id}/${Date.now()}-${safeName}`;
+
+    const { publicUrl } = await db.uploadFile(req.file.buffer, storagePath, req.file.mimetype);
 
     await User.findByIdAndUpdate(req.user.id, {
       'gangMoney.status': 'pending',
-      'gangMoney.slipUrl': slipPath,
+      'gangMoney.slipUrl': publicUrl,
+      'gangMoney.slipStoragePath': storagePath,
       'gangMoney.amount': amount,
       'gangMoney.updatedAt': new Date()
     });
@@ -443,12 +421,11 @@ app.post('/gang-money/delete-history', async (req, res) => {
 
   try {
     const users = await User.find({ 'gangMoney.slipUrl': { $ne: '' } });
-    users.forEach(u => {
-      if (u.gangMoney?.slipUrl) {
-        const filePath = path.join(__dirname, 'public', u.gangMoney.slipUrl);
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    for (const u of users) {
+      if (u.gangMoney?.slipStoragePath) {
+        await db.deleteFile(u.gangMoney.slipStoragePath);
       }
-    });
+    }
 
     await User.updateMany({}, {
       $set: {

@@ -1,4 +1,4 @@
-const { readDatabase, writeDatabase } = require('../db/json');
+const { readDatabase, writeDatabase } = require('../db');
 
 function normalizeUserRow(row) {
   if (!row) return null;
@@ -18,6 +18,7 @@ function normalizeUserRow(row) {
     gangMoney: {
       status: row.gangMoney?.status || 'not_submitted',
       slipUrl: row.gangMoney?.slipUrl || '',
+      slipStoragePath: row.gangMoney?.slipStoragePath || '',
       amount: Number(row.gangMoney?.amount || 0),
       updatedAt: row.gangMoney?.updatedAt ? new Date(row.gangMoney.updatedAt) : null
     },
@@ -31,45 +32,45 @@ function normalizeUserRow(row) {
   };
 
   normalized.save = async function () {
-    const data = readDatabase();
-    const userIndex = data.users.findIndex(user => user.id === String(this.id));
-    if (userIndex === -1) return this;
+      const data = await readDatabase();
+      const userIndex = data.users.findIndex(user => user.id === String(this.id));
+      if (userIndex === -1) return this;
 
-    const recordToWrite = {
-      ...data.users[userIndex],
-      id: this.id,
-      discordId: this.discordId,
-      username: this.username,
-      avatar: this.avatar,
-      displayName: this.displayName,
-      firstName: this.firstName,
-      lastName: this.lastName,
-      phone: this.phone,
-      relationship: this.relationship || 'โสด',
-      role: this.role || 'Member',
-      customAvatarUrl: this.customAvatarUrl,
-      gangMoney: {
-        status: this.gangMoney?.status || 'not_submitted',
-        slipUrl: this.gangMoney?.slipUrl || '',
-        amount: Number(this.gangMoney?.amount || 0),
-        updatedAt: this.gangMoney?.updatedAt instanceof Date ? this.gangMoney.updatedAt.toISOString() : (this.gangMoney?.updatedAt || null)
-      },
-      leaveInfo: {
-        reason: this.leaveInfo?.reason || '',
-        startDate: this.leaveInfo?.startDate instanceof Date ? this.leaveInfo.startDate.toISOString() : (this.leaveInfo?.startDate || null),
-        endDate: this.leaveInfo?.endDate instanceof Date ? this.leaveInfo.endDate.toISOString() : (this.leaveInfo?.endDate || null),
-        leaveCount: Number(this.leaveInfo?.leaveCount || 0),
-        isLeaving: Boolean(this.leaveInfo?.isLeaving)
-      },
-      createdAt: data.users[userIndex].createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      const recordToWrite = {
+        ...data.users[userIndex],
+        id: this.id,
+        discordId: this.discordId,
+        username: this.username,
+        avatar: this.avatar,
+        displayName: this.displayName,
+        firstName: this.firstName,
+        lastName: this.lastName,
+        phone: this.phone,
+        relationship: this.relationship || 'โสด',
+        role: this.role || 'Member',
+        customAvatarUrl: this.customAvatarUrl,
+        gangMoney: {
+          status: this.gangMoney?.status || 'not_submitted',
+          slipUrl: this.gangMoney?.slipUrl || '',
+          slipStoragePath: this.gangMoney?.slipStoragePath || '',
+          amount: Number(this.gangMoney?.amount || 0),
+          updatedAt: this.gangMoney?.updatedAt instanceof Date ? this.gangMoney.updatedAt.toISOString() : (this.gangMoney?.updatedAt || null)
+        },
+        leaveInfo: {
+          reason: this.leaveInfo?.reason || '',
+          startDate: this.leaveInfo?.startDate instanceof Date ? this.leaveInfo.startDate.toISOString() : (this.leaveInfo?.startDate || null),
+          endDate: this.leaveInfo?.endDate instanceof Date ? this.leaveInfo.endDate.toISOString() : (this.leaveInfo?.endDate || null),
+          leaveCount: Number(this.leaveInfo?.leaveCount || 0),
+          isLeaving: Boolean(this.leaveInfo?.isLeaving)
+        },
+        createdAt: data.users[userIndex].createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      data.users[userIndex] = recordToWrite;
+      await writeDatabase(data);
+      return normalizeUserRow(recordToWrite);
     };
-
-    data.users[userIndex] = recordToWrite;
-    writeDatabase(data);
-    return normalizeUserRow(recordToWrite);
-  };
-
   return normalized;
 }
 
@@ -81,6 +82,7 @@ function normalizeUpdatePayload(update) {
     if (key === '$inc') continue;
     if (key === 'gangMoney.status') normalized.gangMoney = { ...(normalized.gangMoney || {}), status: value };
     else if (key === 'gangMoney.slipUrl') normalized.gangMoney = { ...(normalized.gangMoney || {}), slipUrl: value };
+    else if (key === 'gangMoney.slipStoragePath') normalized.gangMoney = { ...(normalized.gangMoney || {}), slipStoragePath: value };
     else if (key === 'gangMoney.amount') normalized.gangMoney = { ...(normalized.gangMoney || {}), amount: value };
     else if (key === 'gangMoney.updatedAt') normalized.gangMoney = { ...(normalized.gangMoney || {}), updatedAt: value instanceof Date ? value.toISOString() : value };
     else if (key === 'leaveInfo.reason') normalized.leaveInfo = { ...(normalized.leaveInfo || {}), reason: value };
@@ -92,6 +94,24 @@ function normalizeUpdatePayload(update) {
   }
 
   return normalized;
+}
+
+function getNestedValue(obj, path) {
+  return path.split('.').reduce((current, key) => current && current[key], obj);
+}
+
+function matchesFilter(user, filter = {}) {
+  if (!filter || Object.keys(filter).length === 0) return true;
+
+  return Object.entries(filter).every(([key, value]) => {
+    const fieldValue = getNestedValue(user, key);
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      if ('$ne' in value) return fieldValue !== value.$ne;
+      if ('$eq' in value) return fieldValue === value.$eq;
+      return false;
+    }
+    return fieldValue === value;
+  });
 }
 
 function buildUserInsert(data) {
@@ -112,6 +132,7 @@ function buildUserInsert(data) {
     gangMoney: {
       status: (data.gangMoney && data.gangMoney.status) || 'not_submitted',
       slipUrl: (data.gangMoney && data.gangMoney.slipUrl) || '',
+      slipStoragePath: (data.gangMoney && data.gangMoney.slipStoragePath) || '',
       amount: Number((data.gangMoney && data.gangMoney.amount) || 0),
       updatedAt: (data.gangMoney && data.gangMoney.updatedAt) ? new Date(data.gangMoney.updatedAt).toISOString() : now
     },
@@ -128,7 +149,7 @@ function buildUserInsert(data) {
 }
 
 async function findOne(query = {}) {
-  const data = readDatabase();
+  const data = await readDatabase();
   const [[key, value]] = Object.entries(query);
   if (!key) return null;
   const row = data.users.find(user => user[key] === value);
@@ -136,29 +157,32 @@ async function findOne(query = {}) {
 }
 
 async function find(filter = {}) {
-  const data = readDatabase();
+  const data = await readDatabase();
   return data.users
-    .slice()
+    .filter(user => matchesFilter(user, filter))
     .sort((a, b) => String(a.displayName || a.username).localeCompare(String(b.displayName || b.username), 'th'))
     .map(normalizeUserRow);
 }
 
 async function findById(id) {
-  const data = readDatabase();
+  const data = await readDatabase();
   const row = data.users.find(user => user.id === String(id));
   return normalizeUserRow(row);
 }
 
 async function findByIdAndUpdate(id, update) {
-  const data = readDatabase();
+  const data = await readDatabase();
   const userIndex = data.users.findIndex(user => user.id === String(id));
   if (userIndex === -1) return null;
 
   const payload = normalizeUpdatePayload(update);
   if (Object.keys(payload).length > 0) {
+    const currentUser = data.users[userIndex];
     data.users[userIndex] = {
-      ...data.users[userIndex],
+      ...currentUser,
       ...payload,
+      gangMoney: payload.gangMoney ? { ...(currentUser.gangMoney || {}), ...payload.gangMoney } : currentUser.gangMoney,
+      leaveInfo: payload.leaveInfo ? { ...(currentUser.leaveInfo || {}), ...payload.leaveInfo } : currentUser.leaveInfo,
       updatedAt: new Date().toISOString()
     };
   }
@@ -175,12 +199,12 @@ async function findByIdAndUpdate(id, update) {
     }
   }
 
-  writeDatabase(data);
+  await writeDatabase(data);
   return findById(id);
 }
 
 async function create(data) {
-  const dataSet = readDatabase();
+  const dataSet = await readDatabase();
   const row = buildUserInsert(data);
 
   if (dataSet.users.some(user => user.discordId === row.discordId)) {
@@ -188,27 +212,37 @@ async function create(data) {
   }
 
   dataSet.users.push(row);
-  writeDatabase(dataSet);
+  await writeDatabase(dataSet);
   return findById(row.id);
 }
 
 async function updateMany(filter = {}, update = {}) {
-  const data = readDatabase();
+  const data = await readDatabase();
   const payload = normalizeUpdatePayload(update);
   const incPayload = update?.$inc || {};
 
-  for (const user of data.users) {
-    Object.assign(user, payload, { updatedAt: new Date().toISOString() });
+  for (let i = 0; i < data.users.length; i++) {
+    const user = data.users[i];
+
+    if (Object.keys(payload).length > 0) {
+      data.users[i] = {
+        ...user,
+        ...payload,
+        gangMoney: payload.gangMoney ? { ...(user.gangMoney || {}), ...payload.gangMoney } : user.gangMoney,
+        leaveInfo: payload.leaveInfo ? { ...(user.leaveInfo || {}), ...payload.leaveInfo } : user.leaveInfo,
+        updatedAt: new Date().toISOString()
+      };
+    }
 
     if (incPayload['leaveInfo.leaveCount']) {
-      user.leaveInfo = {
-        ...(user.leaveInfo || {}),
-        leaveCount: Number(user.leaveInfo?.leaveCount || 0) + Number(incPayload['leaveInfo.leaveCount'] || 0)
+      data.users[i].leaveInfo = {
+        ...(data.users[i].leaveInfo || {}),
+        leaveCount: Number(data.users[i].leaveInfo?.leaveCount || 0) + Number(incPayload['leaveInfo.leaveCount'] || 0)
       };
     }
   }
 
-  writeDatabase(data);
+  await writeDatabase(data);
 }
 
 module.exports = {

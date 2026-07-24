@@ -1,4 +1,4 @@
-const { readDatabase, writeDatabase } = require('../db/json');
+const { readDatabase, writeDatabase } = require('../db');
 
 function toIsoString(value) {
   if (!value) return new Date().toISOString();
@@ -22,7 +22,7 @@ function normalizeTreasuryRow(row) {
       createdAt: toIsoString(log.createdAt)
     })) : [],
     async save() {
-      const data = readDatabase();
+      const data = await readDatabase();
       data.treasury = {
         ...data.treasury,
         id: this.id,
@@ -33,26 +33,26 @@ function normalizeTreasuryRow(row) {
           createdAt: toIsoString(log.createdAt)
         })) : []
       };
-      writeDatabase(data);
+      await writeDatabase(data);
       return this;
     }
   };
 }
 
 async function findOne(query = {}) {
-  const data = readDatabase();
+  const data = await readDatabase();
   const treasury = data.treasury || { id: 'main', balance: 0, logs: [] };
   return normalizeTreasuryRow(treasury);
 }
 
 async function create(data = {}) {
-  const dataSet = readDatabase();
+  const dataSet = await readDatabase();
   dataSet.treasury = {
     id: data.id || 'main',
     balance: Number(data.balance || 0),
     logs: Array.isArray(data.logs) ? data.logs : []
   };
-  writeDatabase(dataSet);
+  await writeDatabase(dataSet);
   return normalizeTreasuryRow(dataSet.treasury);
 }
 
