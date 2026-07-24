@@ -339,10 +339,25 @@ app.get('/gang-money', async (req, res) => {
       allSubmissions = [m];
     }
 
+    const successMessage = req.query.success === 'uploaded'
+      ? 'ส่งสลิปเรียบร้อยแล้ว เงินถูกเพิ่มเข้ากองกลางเรียบร้อย'
+      : null;
+
+    let errorMessage = null;
+    if (req.query.error === 'nofile') {
+      errorMessage = 'กรุณาเลือกไฟล์สลิปก่อนส่ง';
+    } else if (req.query.error === 'invalid_amount') {
+      errorMessage = 'กรุณาระบุจำนวนเงินที่ถูกต้องมากกว่า 0';
+    } else if (req.query.error === 'upload_failed') {
+      errorMessage = 'เกิดข้อผิดพลาดขณะอัพโหลดสลิป โปรดลองอีกครั้ง';
+    }
+
     res.render('gang-money', {
       user: req.user,
       isOfficerOrLeader,
-      allSubmissions
+      allSubmissions,
+      successMessage,
+      errorMessage
     });
   } catch (err) {
     console.error(err);
@@ -369,13 +384,19 @@ app.post('/gang-money/upload', upload.single('slipImage'), async (req, res) => {
 
     const { publicUrl } = await db.uploadFile(req.file.buffer, storagePath, req.file.mimetype);
 
-    await User.findByIdAndUpdate(req.user.id, {
+    const updatedUser = await User.findByIdAndUpdate(req.user.id, {
       'gangMoney.status': 'approved',
       'gangMoney.slipUrl': publicUrl,
       'gangMoney.slipStoragePath': storagePath,
       'gangMoney.amount': amount,
       'gangMoney.updatedAt': new Date()
     });
+
+    if (updatedUser && req.logIn) {
+      req.logIn(updatedUser, err => {
+        if (err) console.warn('Failed to refresh session user after upload:', err);
+      });
+    }
 
     const treasury = await getOrCreateTreasury();
     treasury.balance += amount;
@@ -391,7 +412,7 @@ app.post('/gang-money/upload', upload.single('slipImage'), async (req, res) => {
     res.redirect('/gang-money?success=uploaded');
   } catch (err) {
     console.error('Error uploading gang money slip:', err);
-    res.redirect('/gang-money');
+    res.redirect('/gang-money?error=upload_failed');
   }
 });
 
