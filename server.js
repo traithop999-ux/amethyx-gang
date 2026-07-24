@@ -393,7 +393,7 @@ app.post('/gang-money/upload', upload.single('slipImage'), async (req, res) => {
     console.log('gang-money upload result', uploadResult);
 
     const updatedUser = await User.findByIdAndUpdate(req.user.id, {
-      'gangMoney.status': 'approved',
+      'gangMoney.status': 'pending',
       'gangMoney.slipUrl': uploadResult.publicUrl,
       'gangMoney.slipStoragePath': uploadResult.source === 'storage' ? storagePath : '',
       'gangMoney.amount': amount,
@@ -410,17 +410,6 @@ app.post('/gang-money/upload', upload.single('slipImage'), async (req, res) => {
         console.warn('Failed to refresh session user after upload:', err);
       });
     }
-
-    const treasury = await getOrCreateTreasury();
-    treasury.balance += amount;
-    treasury.logs.push({
-      action: 'deposit',
-      performedBy: `${req.user.displayName || req.user.username}`,
-      amount: amount,
-      reason: 'ฝากเงินแก๊งโดยตรง',
-      createdAt: new Date().toISOString()
-    });
-    await treasury.save();
 
     res.redirect('/gang-money?success=uploaded');
   } catch (err) {
