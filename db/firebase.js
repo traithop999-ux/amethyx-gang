@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const serviceAccountPath = path.join(__dirname, '..', 'firebase-service-account.json');
+const DEFAULT_FIREBASE_STORAGE_BUCKET = 'amethyx-gang.firebasestorage.app';
 
 let initialized = false;
 
@@ -38,7 +39,7 @@ function initFirebase() {
   if (initialized) return;
 
   const credential = loadFirebaseCredential();
-  const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || (process.env.FIREBASE_PROJECT_ID ? `${process.env.FIREBASE_PROJECT_ID}.appspot.com` : undefined);
+  const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || DEFAULT_FIREBASE_STORAGE_BUCKET;
 
   const appConfig = { credential };
   if (storageBucket) {
@@ -57,17 +58,15 @@ function getStorageBucketCandidates() {
 
   if (envBucket) {
     candidates.add(envBucket);
-    if (envBucket.endsWith('.firebasestorage.app') && projectId) {
-      candidates.add(`${projectId}.appspot.com`);
-    }
-    if (envBucket.endsWith('.appspot.com') && projectId) {
-      candidates.add(`${projectId}.firebasestorage.app`);
-    }
   }
+
+  candidates.add(DEFAULT_FIREBASE_STORAGE_BUCKET);
 
   if (projectId) {
     candidates.add(`${projectId}.appspot.com`);
-    candidates.add(`${projectId}.firebasestorage.app`);
+    if (`${projectId}.appspot.com` !== DEFAULT_FIREBASE_STORAGE_BUCKET) {
+      candidates.add(`${projectId}.firebasestorage.app`);
+    }
   }
 
   return Array.from(candidates);
@@ -86,13 +85,23 @@ function normalizeValue(value) {
   if (value instanceof Date) {
     return value.toISOString();
   }
+  if (Buffer.isBuffer(value) || value instanceof Uint8Array) {
+    return Buffer.from(value).toString('base64');
+  }
   if (Array.isArray(value)) {
-    return value.map(normalizeValue);
+    return value
+      .map(normalizeValue)
+      .filter(normalized => normalized !== undefined);
   }
   if (value && typeof value === 'object') {
     return Object.fromEntries(
-      Object.entries(value).map(([key, nestedValue]) => [key, normalizeValue(nestedValue)])
+      Object.entries(value)
+        .map(([key, nestedValue]) => [key, normalizeValue(nestedValue)])
+        .filter(([, normalized]) => normalized !== undefined)
     );
+  }
+  if (typeof value === 'function' || typeof value === 'symbol') {
+    return undefined;
   }
   return value;
 }
@@ -146,13 +155,17 @@ function createDataUri(buffer, contentType) {
 
 async function uploadFile(buffer, destinationPath, contentType) {
   const bucketCandidates = getStorageBucketCandidates();
-  let lastError = null;
 
   for (const bucketName of bucketCandidates) {
     try {
       const bucket = admin.storage().bucket(bucketName);
-      const file = bucket.file(destinationPath);
+      const [exists] = await bucket.exists();
+      if (!exists) {
+        console.warn(`Storage bucket does not exist: ${bucketName}`);
+        continue;
+      }
 
+      const file = bucket.file(destinationPath);
       await file.save(buffer, {
         metadata: {
           contentType: contentType || 'application/octet-stream'
@@ -163,12 +176,8 @@ async function uploadFile(buffer, destinationPath, contentType) {
       const publicUrl = `https://storage.googleapis.com/${bucket.name}/${encodeURIComponent(file.name)}`;
       return { publicUrl };
     } catch (err) {
-      lastError = err;
-      if (err?.response?.status === 404) {
-        console.warn(`Storage bucket not found: ${bucketName}`);
-        continue;
-      }
-      throw err;
+      console.warn(`Failed to upload with bucket ${bucketName}:`, err?.message || err);
+      continue;
     }
   }
 
