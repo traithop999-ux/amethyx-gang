@@ -8,7 +8,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
-    body { background: #07090f; color: #f7f7ff; min-height: 100vh; position: relative; overflow-x: hidden; }
+    html { overflow-x: hidden; }
+    body { background: #07090f; color: #f7f7ff; min-height: 100vh; position: relative; overflow-x: hidden; max-width: 100vw; }
     body::before {
       content: '';
       position: fixed;
@@ -35,8 +36,9 @@
     .summary-box { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-radius: 22px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(10px); }
     .summary-box strong { font-size: 1.4rem; color: #fff; }
     .summary-box span { color: #b7b1d7; }
-    .table-scroll { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; min-width: 900px; }
+    .table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .table-scroll table { width: 100%; border-collapse: collapse; min-width: 100%; }
+    .table-scroll th, .table-scroll td { white-space: normal; word-break: break-word; }
     th, td { text-align: left; padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
     th { font-size: 0.85rem; color: #9da3cc; text-transform: uppercase; letter-spacing: 0.08em; }
     td { color: #ece9ff; vertical-align: middle; }
@@ -58,6 +60,21 @@
     .status-approved { background: rgba(34, 197, 94, 0.13); color: #86efac; }
     .status-none { background: rgba(148, 163, 184, 0.14); color: #cbd5e1; }
     .footer-note { margin-top: 20px; color: #8b87b3; font-size: 0.92rem; }
+
+    @media (max-width: 900px) {
+      .page-shell { padding: 20px 18px 60px; }
+      .header-top { flex-direction: column; align-items: stretch; }
+      .admin-actions { justify-content: flex-start; width: 100%; }
+      .grid-layout { grid-template-columns: 1fr; }
+      .card { padding: 20px; }
+      .summary-box { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .form-inline { flex-direction: column; align-items: stretch; }
+      .btn-small { width: 100%; justify-content: center; }
+      .user-avatar { width: 38px; height: 38px; }
+      th, td { padding: 10px 8px; font-size: 0.82rem; }
+      .status-pill { width: 100%; justify-content: center; }
+      .badge { white-space: normal; }
+    }
   </style>
 </head>
 <body>

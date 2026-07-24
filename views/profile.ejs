@@ -17,6 +17,8 @@
       align-items: center;
       padding: 40px 15px;
       position: relative;
+      max-width: 100vw;
+      overflow-x: hidden;
     }
 
     .bg-glow {
@@ -109,9 +111,19 @@
 
     .link-home { color: #a0a0b8; text-decoration: none; transition: 0.2s; }
     .link-home:hover { color: #fff; }
-
     .link-logout { color: #ff5577; text-decoration: none; transition: 0.2s; font-weight: 500; }
     .link-logout:hover { color: #ff2255; }
+
+    @media (max-width: 780px) {
+      body { padding: 20px 12px; }
+      .card { padding: 30px 24px; max-width: 100%; width: 100%; }
+      .form-row { flex-direction: column; gap: 12px; }
+      .footer-actions { flex-direction: column; align-items: stretch; gap: 10px; }
+      .avatar { width: 90px; height: 90px; }
+      .title { font-size: 1.6rem; }
+      .btn-submit { padding: 14px; }
+      .bg-glow { width: 320px; height: 320px; }
+    }
   </style>
 </head>
 <body>

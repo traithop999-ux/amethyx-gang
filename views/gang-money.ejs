@@ -8,9 +8,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+    html { overflow-x: hidden; }
     body {
       background: #09070f; color: #ffffff; min-height: 100vh;
-      padding: 40px 20px; overflow-x: hidden; position: relative;
+      padding: 40px 20px; overflow-x: hidden; position: relative; max-width: 100vw;
     }
 
     .bg-glow-1 {
@@ -109,6 +110,27 @@
     .alert-box { padding: 12px 16px; border-radius: 12px; margin-top: 20px; display: inline-flex; align-items: center; gap: 10px; font-weight: 600; }
     .alert-success { background: rgba(46, 213, 115, 0.12); color: #2ed573; border: 1px solid rgba(46, 213, 115, 0.25); }
     .alert-error { background: rgba(255, 99, 132, 0.12); color: #ff5f7a; border: 1px solid rgba(255, 99, 132, 0.25); }
+
+    .table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; }
+    .table-scroll table { width: 100%; border-collapse: collapse; min-width: 100%; }
+    .table-scroll th, .table-scroll td { white-space: normal; word-break: break-word; }
+
+    @media (max-width: 860px) {
+      body { padding: 22px 14px; }
+      .main-wrapper { max-width: 100%; }
+      .bg-glow-1, .bg-glow-2 { width: 340px; height: 340px; }
+      .nav-bar { flex-direction: column; align-items: stretch; gap: 15px; }
+      .card-box { padding: 22px; }
+      .title { font-size: 1.2rem; }
+      .form-group { margin-bottom: 16px; }
+      .btn-submit { padding: 12px 18px; }
+      .file-input-group { padding: 24px 16px; }
+      .action-btns { flex-wrap: wrap; gap: 8px; }
+      .btn-approve, .btn-reject { width: 100%; }
+      .slip-img { width: 48px; height: 48px; }
+      th, td { padding: 10px 8px; font-size: 0.84rem; }
+      .badge { white-space: normal; }
+    }
   </style>
 </head>
 <body>
@@ -181,6 +203,7 @@
         <% } %>
       </div>
 
+      <div class="table-scroll">
       <table>
         <thead>
           <tr>
@@ -250,6 +273,7 @@
           <% } %>
         </tbody>
       </table>
+      </div>
     </div>
   </div>
 
