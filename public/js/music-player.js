@@ -40,14 +40,20 @@
   }
 
   function saveState() {
+    // Debounced write to localStorage to avoid frequent synchronous IO
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        playing: !audio.paused,
-        currentTime: audio.currentTime || 0
-      }));
-    } catch (err) {
-      console.warn('Unable to save music state:', err);
-    }
+      if (typeof saveState._timeout !== 'undefined') clearTimeout(saveState._timeout);
+    } catch (e) {}
+    saveState._timeout = setTimeout(() => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          playing: !audio.paused,
+          currentTime: audio.currentTime || 0
+        }));
+      } catch (err) {
+        console.warn('Unable to save music state:', err);
+      }
+    }, 800);
   }
 
   function loadState() {
