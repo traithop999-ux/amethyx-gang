@@ -784,11 +784,9 @@ app.post('/leader-upload/submit', async (req, res) => {
       return res.redirect('/leader-upload?error=nofile');
     }
 
-    const originalName = path.basename(req.file.originalname || 'payment-slip');
-    const safeName = originalName.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const storagePath = `leader-uploads/${req.user.id}/${Date.now()}-${safeName}`;
-
-    const uploadResult = await db.uploadFile(req.file.buffer, storagePath, req.file.mimetype);
+    // Convert image to base64 for persistent storage
+    const imageBase64 = req.file.buffer.toString('base64');
+    const imageDataUrl = `data:${req.file.mimetype};base64,${imageBase64}`;
 
     const treasury = await getOrCreateTreasury();
     treasury.uploadLogs = Array.isArray(treasury.uploadLogs) ? treasury.uploadLogs : [];
@@ -797,8 +795,7 @@ app.post('/leader-upload/submit', async (req, res) => {
       payerName,
       amount,
       note,
-      imageUrl: uploadResult.publicUrl,
-      imagePath: uploadResult.source === 'storage' ? storagePath : '',
+      imageData: imageDataUrl,
       uploadedBy: req.user.displayName || req.user.username,
       createdAt: new Date().toISOString()
     });

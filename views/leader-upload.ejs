@@ -137,10 +137,8 @@
                 <% if (log.note) { %>
                   <div style="margin-top: 6px; color: #cfcfe7;">หมายเหตุ: <%= log.note %></div>
                 <% } %>
-                <% if (log.imageUrl) { %>
-                  <a href="<%= log.imageUrl %>" target="_blank" rel="noopener noreferrer">
-                    <img src="<%= log.imageUrl %>" alt="Slip image">
-                  </a>
+                <% if (log.imageData) { %>
+                  <img src="<%= log.imageData %>" alt="Slip image" style="width: 100%; border-radius: 10px; margin-top: 10px; object-fit: cover; max-height: 230px;">
                 <% } %>
               </div>
             <% }) %>
