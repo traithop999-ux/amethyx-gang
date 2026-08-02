@@ -21,11 +21,21 @@ function normalizeTreasuryRow(row) {
       amount: Number(log.amount || 0),
       createdAt: toIsoString(log.createdAt)
     })) : [],
+    uploadLogs: Array.isArray(row.uploadLogs) ? row.uploadLogs.map(log => ({
+      ...log,
+      amount: Number(log.amount || 0),
+      createdAt: toIsoString(log.createdAt)
+    })) : [],
     async save() {
       const treasuryUpdate = {
         id: this.id,
         balance: Number(this.balance || 0),
         logs: Array.isArray(this.logs) ? this.logs.map(log => ({
+          ...log,
+          amount: Number(log.amount || 0),
+          createdAt: toIsoString(log.createdAt)
+        })) : [],
+        uploadLogs: Array.isArray(this.uploadLogs) ? this.uploadLogs.map(log => ({
           ...log,
           amount: Number(log.amount || 0),
           createdAt: toIsoString(log.createdAt)
@@ -48,7 +58,8 @@ async function create(data = {}) {
   dataSet.treasury = {
     id: data.id || 'main',
     balance: Number(data.balance || 0),
-    logs: Array.isArray(data.logs) ? data.logs : []
+    logs: Array.isArray(data.logs) ? data.logs : [],
+    uploadLogs: Array.isArray(data.uploadLogs) ? data.uploadLogs : []
   };
   await writeDatabase(dataSet);
   return normalizeTreasuryRow(dataSet.treasury);

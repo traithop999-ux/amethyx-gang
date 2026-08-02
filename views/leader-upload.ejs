@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AMETHYX GANG - อัปโหลดสลิปเงิน</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+    html { overflow-x: hidden; }
+    body {
+      background: linear-gradient(135deg, #06050b 0%, #120d24 100%);
+      color: #ffffff; min-height: 100vh; padding: 28px 16px; overflow-x: hidden; position: relative;
+    }
+    .bg-glow-1, .bg-glow-2 { position: fixed; width: 480px; height: 480px; filter: blur(70px); z-index: 0; pointer-events: none; }
+    .bg-glow-1 { background: radial-gradient(circle, rgba(157, 78, 221, 0.18), transparent 70%); top: -10%; left: -5%; }
+    .bg-glow-2 { background: radial-gradient(circle, rgba(46, 213, 115, 0.16), transparent 70%); bottom: -10%; right: -5%; }
+    .main-wrapper { max-width: 1180px; margin: 0 auto; position: relative; z-index: 1; }
+    .header-card {
+      background: rgba(15, 12, 24, 0.8); border: 1px solid rgba(157, 78, 221, 0.28); border-radius: 24px; padding: 22px 24px;
+      display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; backdrop-filter: blur(16px); margin-bottom: 24px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+    }
+    .title-group h1 { font-size: 1.35rem; font-weight: 700; color: #f2dfff; }
+    .title-group p { color: #a0a0b8; font-size: 0.95rem; }
+    .btn-back { text-decoration: none; color: #c77dff; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-back:hover { color: #ffffff; }
+
+    .grid { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 24px; }
+    .card {
+      background: rgba(18, 14, 32, 0.82); border: 1px solid rgba(157, 78, 221, 0.25); border-radius: 22px; padding: 24px;
+      box-shadow: 0 10px 28px rgba(0,0,0,0.35); backdrop-filter: blur(12px);
+    }
+    .section-title { display: flex; align-items: center; gap: 10px; color: #e0aaff; font-size: 1.15rem; font-weight: 700; margin-bottom: 16px; }
+    .form-group { margin-bottom: 14px; }
+    .form-group label { display: block; font-size: 0.92rem; margin-bottom: 8px; color: #c77dff; }
+    .form-control {
+      width: 100%; background: rgba(8, 6, 15, 0.72); border: 1px solid rgba(157, 78, 221, 0.28); border-radius: 12px; padding: 12px 14px; color: #fff; outline: none;
+    }
+    .form-control:focus { border-color: #9d4edd; box-shadow: 0 0 0 3px rgba(157, 78, 221, 0.18); }
+    .upload-box {
+      border: 2px dashed rgba(46, 213, 115, 0.35); border-radius: 16px; padding: 18px; text-align: center; color: #b8ffd6; background: rgba(46, 213, 115, 0.08);
+      margin-bottom: 16px;
+    }
+    .btn-submit {
+      width: 100%; border: none; border-radius: 12px; padding: 12px 16px; background: linear-gradient(135deg, #2ed573, #22a75d); color: white; font-weight: 700; cursor: pointer;
+      display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.2s;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(46, 213, 115, 0.25); }
+    .notice { border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; font-size: 0.92rem; }
+    .notice-success { background: rgba(46, 213, 115, 0.12); color: #9dffc5; border: 1px solid rgba(46, 213, 115, 0.28); }
+    .notice-error { background: rgba(255, 71, 87, 0.12); color: #ffc2c9; border: 1px solid rgba(255, 71, 87, 0.28); }
+    .history-list { display: flex; flex-direction: column; gap: 12px; max-height: 560px; overflow-y: auto; padding-right: 4px; }
+    .history-item {
+      background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 14px;
+    }
+    .history-item img { width: 100%; border-radius: 10px; margin-top: 10px; object-fit: cover; max-height: 230px; }
+    .meta { font-size: 0.84rem; color: #a0a0b8; margin-bottom: 6px; }
+    .amount { color: #2ed573; font-weight: 700; }
+    .empty { text-align: center; color: #8f8fa4; padding: 24px 0; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+
+  <div class="main-wrapper">
+    <div class="header-card">
+      <div class="title-group">
+        <h1><i class="fa-solid fa-camera"></i> อัปโหลดสลิปการส่งเงิน</h1>
+        <p>สำหรับ Leader / Officer เท่านั้น เพื่อบันทึกชื่อผู้ส่งเงิน จำนวนเงิน และรูปภาพไว้เป็นประวัติ</p>
+      </div>
+      <a href="/members" class="btn-back"><i class="fa-solid fa-arrow-left"></i> กลับหน้าสมาชิก</a>
+    </div>
+
+    <% if (successMessage) { %>
+      <div class="notice notice-success"><i class="fa-solid fa-circle-check"></i> <%= successMessage %></div>
+    <% } %>
+    <% if (errorMessage) { %>
+      <div class="notice notice-error"><i class="fa-solid fa-circle-exclamation"></i> <%= errorMessage %></div>
+    <% } %>
+
+    <div class="grid">
+      <div class="card">
+        <div class="section-title"><i class="fa-solid fa-cloud-arrow-up"></i> ฟอร์มอัปโหลด</div>
+        <form action="/leader-upload/submit" method="POST" enctype="multipart/form-data">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="form-group">
+            <label><i class="fa-solid fa-user"></i> ชื่อผู้ส่งเงิน</label>
+            <input type="text" class="form-control" name="payerName" placeholder="เช่น ไอซ์, มายด์" required>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-coins"></i> จำนวนเงิน</label>
+            <input type="number" class="form-control" name="amount" placeholder="เช่น 500" min="1" step="any" required>
+          </div>
+          <div class="form-group">
+            <label><i class="fa-solid fa-note-sticky"></i> หมายเหตุ</label>
+            <input type="text" class="form-control" name="note" placeholder="เช่น ส่งเงินรายสัปดาห์, ฝากเข้ากองกลาง">
+          </div>
+          <div class="upload-box">
+            <i class="fa-solid fa-image" style="font-size: 1.3rem;"></i>
+            <div style="margin-top: 8px; font-weight: 600;">เลือกรูปภาพสลิป</div>
+            <input type="file" name="slipImage" accept="image/*" required style="margin-top: 10px; color: #fff;">
+          </div>
+          <button type="submit" class="btn-submit"><i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลและอัปโหลดรูป</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติการอัปโหลดล่าสุด</div>
+        <% if (uploadLogs && uploadLogs.length > 0) { %>
+          <div class="history-list">
+            <% uploadLogs.forEach(log => { %>
+              <div class="history-item">
+                <div class="meta"><i class="fa-regular fa-clock"></i> <%= log.formattedDate %></div>
+                <div style="font-weight: 700; color: #f4d9ff; margin-bottom: 4px;"><%= log.payerName %></div>
+                <div style="margin-bottom: 4px; color: #d8d8e6;">ผู้บันทึก: <strong><%= log.uploadedBy %></strong></div>
+                <div class="amount"><i class="fa-solid fa-coins"></i> <%= Number(log.amount || 0).toLocaleString() %> บาท</div>
+                <% if (log.note) { %>
+                  <div style="margin-top: 6px; color: #cfcfe7;">หมายเหตุ: <%= log.note %></div>
+                <% } %>
+                <% if (log.imageUrl) { %>
+                  <a href="<%= log.imageUrl %>" target="_blank" rel="noopener noreferrer">
+                    <img src="<%= log.imageUrl %>" alt="Slip image">
+                  </a>
+                <% } %>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="empty">ยังไม่มีประวัติอัปโหลดในตอนนี้</div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="snowCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;"></canvas>
+
+  <script>
+    const canvas = document.getElementById('snowCanvas');
+    const ctx = canvas.getContext('2d');
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    window.addEventListener('resize', () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    const particles = [];
+    for (let i = 0; i < 40; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 2 + 1,
+        speedY: Math.random() * 0.8 + 0.3,
+        color: ['#e0aaff', '#c77dff', '#2ed573'][Math.floor(Math.random() * 3)]
+      });
+    }
+
+    function animateSnow() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.y += p.speedY;
+        if (p.y > height) p.y = 0;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color; ctx.fill();
+      });
+      requestAnimationFrame(animateSnow);
+    }
+    animateSnow();
+  </script>
+  <script src="/js/music-player.js"></script>
+</body>
+</html>

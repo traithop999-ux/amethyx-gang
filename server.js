@@ -157,6 +157,14 @@ function ensureAdminAuth(req, res, next) {
   return res.redirect('/admin/login');
 }
 
+function ensureLeaderOfficer(req, res, next) {
+  if (!req.isAuthenticated()) return res.redirect('/');
+  if (!['Leader', 'Officer'].includes(req.user.role)) {
+    return res.status(403).send('เฉพาะ Leader หรือ Officer เท่านั้นที่สามารถดูหน้านี้ได้');
+  }
+  return next();
+}
+
 // Passport Strategy setup
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;
 const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET;
@@ -715,6 +723,87 @@ app.post('/gang-treasury/adjust', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.redirect('/gang-treasury');
+  }
+});
+
+app.get('/leader-upload', ensureLeaderOfficer, async (req, res) => {
+  try {
+    const treasury = await getOrCreateTreasury();
+    const uploadLogs = Array.isArray(treasury.uploadLogs) ? treasury.uploadLogs : [];
+    const formattedLogs = uploadLogs
+      .map(log => ({
+        ...log,
+        amount: Number(log.amount || 0),
+        formattedDate: new Date(log.createdAt || new Date()).toLocaleDateString('th-TH', {
+          year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Bangkok'
+        })
+      }))
+      .reverse();
+
+    const successMessage = req.query.success === 'uploaded' ? 'บันทึกการส่งเงินเรียบร้อยแล้ว' : null;
+    let errorMessage = null;
+    if (req.query.error === 'nofile') errorMessage = 'กรุณาเลือกไฟล์รูปภาพก่อนส่ง';
+    else if (req.query.error === 'invalid_name') errorMessage = 'กรุณากรอกชื่อผู้ส่งเงิน';
+    else if (req.query.error === 'invalid_amount') errorMessage = 'กรุณาระบุจำนวนเงินที่ถูกต้อง';
+    else if (req.query.error === 'upload_failed') errorMessage = 'อัปโหลดรูปไม่สำเร็จ โปรดลองใหม่อีกครั้ง';
+
+    res.render('leader-upload', {
+      user: req.user,
+      uploadLogs: formattedLogs,
+      successMessage,
+      errorMessage
+    });
+  } catch (err) {
+    console.error('Leader upload page error:', err);
+    res.redirect('/members');
+  }
+});
+
+app.post('/leader-upload/submit', upload.single('slipImage'), async (req, res) => {
+  if (!req.isAuthenticated()) return res.redirect('/');
+  if (!['Leader', 'Officer'].includes(req.user.role)) return res.status(403).send('ไม่มีสิทธิ์');
+
+  try {
+    const payerName = (req.body.payerName || '').trim();
+    const note = (req.body.note || '').trim();
+    const amount = Number(req.body.amount || 0);
+
+    if (!payerName) {
+      return res.redirect('/leader-upload?error=invalid_name');
+    }
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return res.redirect('/leader-upload?error=invalid_amount');
+    }
+
+    if (!req.file) {
+      return res.redirect('/leader-upload?error=nofile');
+    }
+
+    const originalName = path.basename(req.file.originalname || 'payment-slip');
+    const safeName = originalName.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storagePath = `leader-uploads/${req.user.id}/${Date.now()}-${safeName}`;
+
+    const uploadResult = await db.uploadFile(req.file.buffer, storagePath, req.file.mimetype);
+
+    const treasury = await getOrCreateTreasury();
+    treasury.uploadLogs = Array.isArray(treasury.uploadLogs) ? treasury.uploadLogs : [];
+    treasury.uploadLogs.push({
+      action: 'payment_log',
+      payerName,
+      amount,
+      note,
+      imageUrl: uploadResult.publicUrl,
+      imagePath: uploadResult.source === 'storage' ? storagePath : '',
+      uploadedBy: req.user.displayName || req.user.username,
+      createdAt: new Date().toISOString()
+    });
+
+    await treasury.save();
+    res.redirect('/leader-upload?success=uploaded');
+  } catch (err) {
+    console.error('Leader upload submission error:', err);
+    res.redirect('/leader-upload?error=upload_failed');
   }
 });
 

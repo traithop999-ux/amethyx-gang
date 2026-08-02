@@ -207,6 +207,11 @@
         <a href="/gang-money" class="nav-btn btn-money">
           <i class="fa-solid fa-file-invoice-dollar"></i> ส่งเงินแก๊ง
         </a>
+        <% if (user.role === 'Leader' || user.role === 'Officer') { %>
+          <a href="/leader-upload" class="nav-btn" style="border-color: rgba(46, 213, 115, 0.4); color: #2ed573; background: rgba(46, 213, 115, 0.08);">
+            <i class="fa-solid fa-camera"></i> อัปโหลดสลิป
+          </a>
+        <% } %>
         <a href="/gang-treasury" class="nav-btn btn-treasury">
           <i class="fa-solid fa-vault"></i> กระเป๋าเงินแก๊ง
         </a>
