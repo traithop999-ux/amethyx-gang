@@ -132,11 +132,18 @@ const authLimiter = rateLimit({
 
 app.use(generalLimiter);
 app.use('/gang-money/upload', upload.single('slipImage'));
+app.use('/leader-upload/submit', upload.single('slipImage'));
 const csrfProtection = csrf({
   cookie: false
 });
 
-app.use(csrfProtection);
+// ข้าม CSRF check สำหรับ upload routes
+app.use((req, res, next) => {
+  if (req.path === '/leader-upload/submit' || req.path === '/gang-money/upload') {
+    return next();
+  }
+  return csrfProtection(req, res, next);
+});
 app.use((req, res, next) => {
   if (typeof req.csrfToken === 'function') {
     try {
@@ -756,7 +763,7 @@ app.get('/leader-upload', ensureLeaderOfficer, async (req, res) => {
   }
 });
 
-app.post('/leader-upload/submit', upload.single('slipImage'), async (req, res) => {
+app.post('/leader-upload/submit', async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
   if (!['Leader', 'Officer'].includes(req.user.role)) return res.status(403).send('ไม่มีสิทธิ์');
 
