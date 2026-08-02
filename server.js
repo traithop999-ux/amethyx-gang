@@ -751,7 +751,8 @@ app.get('/leader-upload', ensureLeaderOfficer, async (req, res) => {
       user: req.user,
       uploadLogs: formattedLogs,
       successMessage,
-      errorMessage
+      errorMessage,
+      csrfToken: req.csrfToken()
     });
   } catch (err) {
     console.error('Leader upload page error:', err);
