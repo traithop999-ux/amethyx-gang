@@ -133,7 +133,6 @@ const authLimiter = rateLimit({
 app.use(generalLimiter);
 app.use('/gang-money/upload', upload.single('slipImage'));
 app.use('/leader-upload/submit', upload.single('slipImage'));
-app.use('/gang-money/upload-transfer-slip', upload.single('slipImage'));
 const csrfProtection = csrf({
   cookie: false
 });
@@ -169,7 +168,7 @@ function ensureLeaderOfficer(req, res, next) {
   return next();
 }
 
-app.post('/gang-money/upload-transfer-slip/:id', async (req, res) => {
+app.post('/gang-money/upload-transfer-slip/:id', upload.single('slipImage'), async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');
   if (!['Leader', 'Officer'].includes(req.user.role)) return res.status(403).send('ไม่มีสิทธิ์');
 
