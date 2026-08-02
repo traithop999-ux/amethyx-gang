@@ -896,12 +896,16 @@ app.post('/gang-money/delete-history', async (req, res) => {
       }
     }
 
+    // Clear gang money and transfer slip history for all users
     await User.updateMany({}, {
       $set: {
         'gangMoney.status': 'not_submitted',
         'gangMoney.slipUrl': '',
         'gangMoney.amount': 0,
-        'gangMoney.updatedAt': null
+        'gangMoney.updatedAt': null,
+        'transferSlip.imageData': '',
+        'transferSlip.uploadedBy': '',
+        'transferSlip.uploadedAt': null
       }
     });
 
