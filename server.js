@@ -811,6 +811,18 @@ app.post('/leader-upload/submit', async (req, res) => {
   }
 });
 
+app.post('/leader-upload/clear-logs', ensureLeaderOfficer, async (req, res) => {
+  try {
+    const treasury = await getOrCreateTreasury();
+    treasury.uploadLogs = [];
+    await treasury.save();
+    res.redirect('/leader-upload?success=cleared');
+  } catch (err) {
+    console.error('Clear upload logs error:', err);
+    res.redirect('/leader-upload?error=clear_failed');
+  }
+});
+
 // 4. Leader / Officer กดรีเซ็ตสถานะสมาชิกทุกคน (Reset All)
 app.post('/gang-money/reset-all', async (req, res) => {
   if (!req.isAuthenticated()) return res.redirect('/');

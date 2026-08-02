@@ -81,6 +81,12 @@
     <% if (errorMessage) { %>
       <div class="notice notice-error"><i class="fa-solid fa-circle-exclamation"></i> <%= errorMessage %></div>
     <% } %>
+    <% if (typeof req !== 'undefined' && req.query && req.query.success === 'cleared') { %>
+      <div class="notice notice-success"><i class="fa-solid fa-circle-check"></i> ลบประวัติอัปโหลดทั้งหมดเสร็จแล้ว</div>
+    <% } %>
+    <% if (typeof req !== 'undefined' && req.query && req.query.error === 'clear_failed') { %>
+      <div class="notice notice-error"><i class="fa-solid fa-circle-exclamation"></i> เกิดข้อผิดพลาดในการลบประวัติ โปรดลองอีกครั้ง</div>
+    <% } %>
 
     <div class="grid">
       <div class="card">
@@ -109,7 +115,17 @@
       </div>
 
       <div class="card">
-        <div class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติการอัปโหลดล่าสุด</div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+          <div class="section-title" style="margin-bottom: 0;"><i class="fa-solid fa-clock-rotate-left"></i> ประวัติการอัปโหลดล่าสุด</div>
+          <% if (uploadLogs && uploadLogs.length > 0) { %>
+            <form action="/leader-upload/clear-logs" method="POST" style="margin: 0;" onsubmit="return confirm('คุณแน่ใจว่าต้องการลบประวัติทั้งหมด? ข้อมูลนี้จะไม่สามารถกู้คืนได้')">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button type="submit" style="background: linear-gradient(135deg, #ff4757, #ff6b81); border: none; border-radius: 10px; padding: 8px 14px; color: white; font-weight: 600; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-trash"></i> ลบประวัติทั้งหมด
+              </button>
+            </form>
+          <% } %>
+        </div>
         <% if (uploadLogs && uploadLogs.length > 0) { %>
           <div class="history-list">
             <% uploadLogs.forEach(log => { %>
