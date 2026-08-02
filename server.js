@@ -133,11 +133,7 @@ const authLimiter = rateLimit({
 app.use(generalLimiter);
 app.use('/gang-money/upload', upload.single('slipImage'));
 const csrfProtection = csrf({
-  cookie: {
-    httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax'
-  }
+  cookie: false
 });
 
 app.use(csrfProtection);
