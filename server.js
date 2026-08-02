@@ -104,11 +104,14 @@ app.use(session({
   }
 }));
 
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-const ADMIN_AUTH_ENABLED = Boolean(ADMIN_USERNAME && ADMIN_PASSWORD);
-if (!ADMIN_AUTH_ENABLED) {
-  console.warn('Admin credentials are not configured. Admin login is disabled until ADMIN_USERNAME and ADMIN_PASSWORD are set.');
+const DEFAULT_ADMIN_USERNAME = 'iso1120111@iso.com';
+const DEFAULT_ADMIN_PASSWORD = 'Love112011.';
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || DEFAULT_ADMIN_USERNAME;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD;
+const ADMIN_AUTH_ENABLED = true;
+
+if (!process.env.ADMIN_USERNAME || !process.env.ADMIN_PASSWORD) {
+  console.warn('Admin credentials were not set in environment variables. Using built-in fallback credentials for admin login.');
 }
 
 const generalLimiter = rateLimit({

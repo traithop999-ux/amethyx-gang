@@ -9,46 +9,84 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
     html { overflow-x: hidden; }
-    body { background: #07090f; color: #f7f7ff; min-height: 100vh; position: relative; overflow-x: hidden; max-width: 100vw; }
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(120, 79, 255, 0.24), transparent 24%),
+        radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.16), transparent 28%),
+        linear-gradient(135deg, #07090f 0%, #0b1020 42%, #090d17 100%);
+      color: #f7f7ff;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+      max-width: 100vw;
+    }
     body::before {
       content: '';
       position: fixed;
       inset: 0;
-      background: radial-gradient(circle at top left, rgba(120, 79, 255, 0.18), transparent 25%),
-                  radial-gradient(circle at bottom right, rgba(56, 189, 248, 0.14), transparent 30%);
+      background: linear-gradient(120deg, rgba(255,255,255,0.02), transparent 30%, rgba(255,255,255,0.03));
       pointer-events: none;
       z-index: 0;
     }
     .page-shell { position: relative; z-index: 1; padding: 30px 24px 80px; max-width: 1320px; margin: 0 auto; }
-    .header-top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px; align-items: center; margin-bottom: 28px; }
+    .header-top {
+      display: flex; flex-wrap: wrap; justify-content: space-between; gap: 18px; align-items: center;
+      margin-bottom: 28px; padding: 24px 24px; border-radius: 28px;
+      background: linear-gradient(135deg, rgba(8, 10, 19, 0.94), rgba(20, 28, 48, 0.88));
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(18px);
+    }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px;
+      font-size: 0.78rem; letter-spacing: 0.18em; text-transform: uppercase; color: #c7d2fe;
+      background: rgba(99, 102, 241, 0.14); border: 1px solid rgba(99, 102, 241, 0.22);
+      margin-bottom: 10px;
+    }
     .header-title { font-size: clamp(2.1rem, 2.4vw, 3rem); font-weight: 800; letter-spacing: 0.02em; }
-    .header-sub { color: #a7a1c8; margin-top: 8px; }
-    .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border-radius: 999px; background: rgba(99, 102, 241, 0.15); color: #c7d2fe; font-weight: 600; }
+    .header-sub { color: #a7a1c8; margin-top: 8px; line-height: 1.6; max-width: 700px; }
+    .status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 999px; background: rgba(99, 102, 241, 0.16); color: #c7d2fe; font-weight: 600; border: 1px solid rgba(99, 102, 241, 0.22); }
     .admin-actions { display: inline-flex; gap: 12px; flex-wrap: wrap; align-items: center; }
-    .btn-action { display: inline-flex; align-items: center; gap: 10px; border: none; border-radius: 14px; padding: 12px 18px; background: linear-gradient(135deg, rgba(123, 44, 191, 0.18), rgba(59, 130, 246, 0.18)); color: #eef2ff; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
-    .btn-action:hover { transform: translateY(-2px); box-shadow: 0 20px 45px rgba(99, 102, 241, 0.12); }
+    .btn-action { display: inline-flex; align-items: center; gap: 10px; border: none; border-radius: 14px; padding: 12px 18px; background: linear-gradient(135deg, rgba(123, 44, 191, 0.26), rgba(59, 130, 246, 0.24)); color: #eef2ff; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease; text-decoration: none; }
+    .btn-action:hover { transform: translateY(-2px); box-shadow: 0 20px 45px rgba(99, 102, 241, 0.16); background: linear-gradient(135deg, rgba(139, 92, 246, 0.34), rgba(37, 99, 235, 0.28)); }
     .grid-layout { display: grid; grid-template-columns: repeat(12, 1fr); gap: 22px; }
-    .card { position: relative; background: rgba(15, 12, 26, 0.88); border: 1px solid rgba(126, 34, 206, 0.18); border-radius: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.35); padding: 26px; overflow: hidden; }
-    .card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(124, 58, 237, 0.14), transparent 35%); pointer-events: none; }
+    .card {
+      position: relative; background: rgba(15, 12, 26, 0.9); border: 1px solid rgba(126, 34, 206, 0.2);
+      border-radius: 28px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); padding: 26px; overflow: hidden;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover { transform: translateY(-2px); border-color: rgba(192, 132, 252, 0.34); box-shadow: 0 24px 56px rgba(0,0,0,0.36); }
+    .card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), transparent 35%); pointer-events: none; }
     .card h3 { position: relative; margin-bottom: 16px; font-size: 1.2rem; z-index: 1; }
     .card p { color: #b9b5d9; line-height: 1.7; position: relative; z-index: 1; }
     .data-grid { display: grid; gap: 16px; }
-    .summary-box { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-radius: 22px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); backdrop-filter: blur(10px); }
+    .summary-box {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 18px 20px; border-radius: 22px; background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.07); backdrop-filter: blur(10px);
+    }
     .summary-box strong { font-size: 1.4rem; color: #fff; }
     .summary-box span { color: #b7b1d7; }
+    .summary-box .summary-icon {
+      width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center;
+      background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(59,130,246,0.18)); color: #e9d5ff;
+      flex-shrink: 0;
+    }
     .table-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .table-scroll table { width: 100%; border-collapse: collapse; min-width: 100%; }
     .table-scroll th, .table-scroll td { white-space: normal; word-break: break-word; }
     th, td { text-align: left; padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.08); }
     th { font-size: 0.85rem; color: #9da3cc; text-transform: uppercase; letter-spacing: 0.08em; }
     td { color: #ece9ff; vertical-align: middle; }
+    .table-scroll tbody tr:hover { background: rgba(255,255,255,0.035); }
+    .table-scroll thead th { position: sticky; top: 0; background: rgba(10, 14, 24, 0.95); backdrop-filter: blur(8px); z-index: 1; }
     .user-avatar { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(157, 78, 221, 0.3); }
     .badge { display: inline-flex; padding: 6px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.03em; }
     .badge-member { background: rgba(168, 85, 247, 0.14); color: #d6bbff; }
     .badge-officer { background: rgba(14, 165, 233, 0.14); color: #93c5fd; }
     .badge-leader { background: rgba(250, 204, 21, 0.16); color: #fde68a; }
-    .btn-small { display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #eef2ff; font-size: 0.82rem; cursor: pointer; transition: background 0.2s ease; }
-    .btn-small:hover { background: rgba(255,255,255,0.08); }
+    .btn-small { display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: #eef2ff; font-size: 0.82rem; cursor: pointer; transition: background 0.2s ease, transform 0.2s ease; text-decoration: none; }
+    .btn-small:hover { background: rgba(255,255,255,0.09); transform: translateY(-1px); }
     .panel-grid { display: grid; gap: 18px; }
     .form-inline { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
     .form-inline select, .form-inline button { flex: 1; }
@@ -59,6 +97,11 @@
     .status-pending { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
     .status-approved { background: rgba(34, 197, 94, 0.13); color: #86efac; }
     .status-none { background: rgba(148, 163, 184, 0.14); color: #cbd5e1; }
+    .input-field {
+      width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #fff;
+      padding: 10px 12px; border-radius: 12px; outline: none; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .input-field:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.16); }
     .footer-note { margin-top: 20px; color: #8b87b3; font-size: 0.92rem; }
 
     @media (max-width: 900px) {
@@ -81,8 +124,9 @@
   <div class="page-shell">
     <div class="header-top">
       <div>
+        <div class="eyebrow"><i class="fa-solid fa-shield-halved"></i> AMETHYX GANG CONTROL CENTER</div>
         <h1 class="header-title">Admin Dashboard</h1>
-        <p class="header-sub">จัดการสมาชิกทั้งหมด ยศตำแหน่ง และประวัติการเงิน</p>
+        <p class="header-sub">จัดการสมาชิกทั้งหมด ยศตำแหน่ง และประวัติการเงินแบบเรียบง่ายและสบายตา</p>
       </div>
       <div class="admin-actions">
         <span class="status-pill"><i class="fa-solid fa-user-shield"></i> Admin: <%= adminUser %></span>
@@ -94,12 +138,12 @@
       <div class="card" style="grid-column: span 4;">
         <h3>สรุปสถานะ</h3>
         <div class="data-grid">
-          <div class="summary-box"><strong><%= members.length %></strong><span>สมาชิกทั้งหมด</span></div>
-          <div class="summary-box"><strong><%= pendingCount %></strong><span>รอยืนยันสลิป</span></div>
-          <div class="summary-box"><strong><%= submittedTodayCount %></strong><span>ส่งเงินแก๊งวันนี้</span></div>
-          <div class="summary-box"><strong><%= leaveTodayCount %></strong><span>ลาแก๊งวันนี้</span></div>
-          <div class="summary-box"><strong><%= approvedCount %></strong><span>อนุมัติสลิป</span></div>
-          <div class="summary-box"><strong><%= treasury.balance || 0 %> ฿</strong><span>ยอดเงินกองกลาง</span></div>
+          <div class="summary-box"><div><strong><%= members.length %></strong><br><span>สมาชิกทั้งหมด</span></div><div class="summary-icon"><i class="fa-solid fa-users"></i></div></div>
+          <div class="summary-box"><div><strong><%= pendingCount %></strong><br><span>รอยืนยันสลิป</span></div><div class="summary-icon"><i class="fa-solid fa-file-invoice-dollar"></i></div></div>
+          <div class="summary-box"><div><strong><%= submittedTodayCount %></strong><br><span>ส่งเงินแก๊งวันนี้</span></div><div class="summary-icon"><i class="fa-solid fa-calendar-day"></i></div></div>
+          <div class="summary-box"><div><strong><%= leaveTodayCount %></strong><br><span>ลาแก๊งวันนี้</span></div><div class="summary-icon"><i class="fa-solid fa-person-walking-arrow-right"></i></div></div>
+          <div class="summary-box"><div><strong><%= approvedCount %></strong><br><span>อนุมัติสลิป</span></div><div class="summary-icon"><i class="fa-solid fa-circle-check"></i></div></div>
+          <div class="summary-box"><div><strong><%= treasury.balance || 0 %> ฿</strong><br><span>ยอดเงินกองกลาง</span></div><div class="summary-icon"><i class="fa-solid fa-wallet"></i></div></div>
         </div>
       </div>
 
@@ -127,7 +171,7 @@
                   <td>
                   <form action="/admin/user/<%= member.id %>/update-name" method="POST" style="display:flex; gap:8px; flex-wrap: wrap; align-items: center;">
                     <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                    <input type="text" name="displayName" value="<%= member.displayName || member.username %>" style="min-width: 160px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 8px 10px; border-radius: 10px;" required>
+                    <input type="text" name="displayName" value="<%= member.displayName || member.username %>" class="input-field" style="min-width: 160px;" required>
                     <button type="submit" class="btn-small"><i class="fa-solid fa-pen"></i> แก้ชื่อ</button>
                   </form>
                   <div style="margin-top: 8px; color: #9ca3af; font-size: 0.82rem;">ID: <%= member.discordId %></div>
@@ -147,7 +191,7 @@
                   <td>
                     <form action="/admin/user/<%= member.id %>/update-role" method="POST" style="display:inline-flex; gap: 8px; align-items:center;">
                       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                      <select name="role" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #fff; padding: 8px 10px; border-radius: 10px;">
+                      <select name="role" class="input-field" style="min-width: 140px;">
                         <option value="Member" <%= member.role === 'Member' ? 'selected' : '' %>>Member</option>
                         <option value="Officer" <%= member.role === 'Officer' ? 'selected' : '' %>>Officer</option>
                         <option value="Leader" <%= member.role === 'Leader' ? 'selected' : '' %>>Leader</option>
