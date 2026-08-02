@@ -218,9 +218,10 @@
           <tr>
             <th>สมาชิก</th>
             <th>จำนวนเงิน</th>
-            <th>รูปสลิป</th>
+            <th>รูปสลิปส่งเงิน</th>
             <th>วันที่ส่ง (ไทย)</th>
             <th>สถานะ</th>
+            <th>สลิปรับเงิน</th>
             <th>จัดการ</th>
           </tr>
         </thead>
@@ -253,6 +254,35 @@
                     <span class="badge badge-approved"><i class="fa-solid fa-circle-check"></i> ส่งเงินแล้ว</span>
                   <% } else { %>
                     <span class="badge badge-rejected"><i class="fa-solid fa-circle-xmark"></i> ยังไม่ส่งเงิน</span>
+                  <% } %>
+                </td>
+                <td>
+                  <% if (isOfficerOrLeader) { %>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                      <% if (m.transferSlip?.imageData) { %>
+                        <img src="<%= m.transferSlip.imageData %>" class="slip-img clickable-image" title="คลิกเพื่อดูรูปเต็มขนาด" data-full-src="<%= m.transferSlip.imageData %>">
+                        <form action="/gang-money/delete-transfer-slip/<%= m.id %>" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('ต้องการลบสลิปรับเงินนี้ไหม')">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                          <button type="submit" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600;"><i class="fa-solid fa-trash"></i></button>
+                        </form>
+                      <% } else { %>
+                        <button onclick="toggleTransferSlipForm('<%= m.id %>')" style="background: #9d4edd; color: white; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; white-space: nowrap;"><i class="fa-solid fa-cloud-arrow-up"></i> อัพโหลด</button>
+                      <% } %>
+                    </div>
+                    <form id="transferSlipForm_<%= m.id %>" action="/gang-money/upload-transfer-slip/<%= m.id %>" method="POST" enctype="multipart/form-data" style="display: none; margin-top: 8px; padding: 8px; background: rgba(157, 78, 221, 0.1); border-radius: 8px;">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <div style="display: flex; gap: 6px; align-items: center;">
+                        <input type="file" name="slipImage" accept="image/*" required style="flex: 1; font-size: 0.8rem;">
+                        <button type="submit" style="background: #2ed573; color: white; border: none; padding: 6px 8px; border-radius: 6px; cursor: pointer; font-weight: 600; white-space: nowrap; font-size: 0.8rem;"><i class="fa-solid fa-check"></i> ส่ง</button>
+                        <button type="button" onclick="toggleTransferSlipForm('<%= m.id %>')" style="background: #666; color: white; border: none; padding: 6px 8px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem;"><i class="fa-solid fa-times"></i></button>
+                      </div>
+                    </form>
+                  <% } else { %>
+                    <% if (m.transferSlip?.imageData) { %>
+                      <img src="<%= m.transferSlip.imageData %>" class="slip-img clickable-image" title="คลิกเพื่อดูรูปเต็มขนาด" data-full-src="<%= m.transferSlip.imageData %>">
+                    <% } else { %>
+                      <span style="color: #666; font-size: 0.85rem;">-</span>
+                    <% } %>
                   <% } %>
                 </td>
                 <td>
@@ -297,6 +327,18 @@
   <canvas id="snowCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;"></canvas>
 
   <script>
+    // Toggle Transfer Slip Upload Form
+    function toggleTransferSlipForm(userId) {
+      const form = document.getElementById('transferSlipForm_' + userId);
+      if (form) {
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        if (form.style.display === 'block') {
+          const fileInput = form.querySelector('input[type="file"]');
+          if (fileInput) fileInput.focus();
+        }
+      }
+    }
+
     // Image Modal Handler
     function openModal(imageSrc) {
       const modal = document.getElementById('imageModal');

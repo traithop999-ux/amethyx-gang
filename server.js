@@ -133,13 +133,14 @@ const authLimiter = rateLimit({
 app.use(generalLimiter);
 app.use('/gang-money/upload', upload.single('slipImage'));
 app.use('/leader-upload/submit', upload.single('slipImage'));
+app.use('/gang-money/upload-transfer-slip', upload.single('slipImage'));
 const csrfProtection = csrf({
   cookie: false
 });
 
 // ข้าม CSRF check สำหรับ upload routes
 app.use((req, res, next) => {
-  if (req.path === '/leader-upload/submit' || req.path === '/gang-money/upload') {
+  if (req.path === '/leader-upload/submit' || req.path === '/gang-money/upload' || req.path.startsWith('/gang-money/upload-transfer-slip')) {
     return next();
   }
   return csrfProtection(req, res, next);
@@ -167,6 +168,51 @@ function ensureLeaderOfficer(req, res, next) {
   }
   return next();
 }
+
+app.post('/gang-money/upload-transfer-slip/:id', async (req, res) => {
+  if (!req.isAuthenticated()) return res.redirect('/');
+  if (!['Leader', 'Officer'].includes(req.user.role)) return res.status(403).send('ไม่มีสิทธิ์');
+
+  try {
+    if (!req.file) {
+      return res.redirect('/gang-money?error=nofile');
+    }
+
+    const targetUserId = req.params.id;
+    
+    // Convert image to base64 for persistent storage
+    const imageBase64 = req.file.buffer.toString('base64');
+    const imageDataUrl = `data:${req.file.mimetype};base64,${imageBase64}`;
+
+    const updatedUser = await User.findByIdAndUpdate(targetUserId, {
+      'transferSlip.imageData': imageDataUrl,
+      'transferSlip.uploadedBy': req.user.displayName || req.user.username,
+      'transferSlip.uploadedAt': new Date()
+    });
+
+    res.redirect('/gang-money');
+  } catch (err) {
+    console.error('Error uploading transfer slip:', err);
+    res.redirect('/gang-money?error=upload_failed');
+  }
+});
+
+app.post('/gang-money/delete-transfer-slip/:id', async (req, res) => {
+  if (!req.isAuthenticated()) return res.redirect('/');
+  if (!['Leader', 'Officer'].includes(req.user.role)) return res.status(403).send('ไม่มีสิทธิ์');
+
+  try {
+    await User.findByIdAndUpdate(req.params.id, {
+      'transferSlip.imageData': '',
+      'transferSlip.uploadedBy': '',
+      'transferSlip.uploadedAt': null
+    });
+    res.redirect('/gang-money');
+  } catch (err) {
+    console.error('Error deleting transfer slip:', err);
+    res.redirect('/gang-money');
+  }
+});
 
 // Passport Strategy setup
 const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID;

@@ -22,6 +22,11 @@ function normalizeUserRow(row) {
       amount: Number(row.gangMoney?.amount || 0),
       updatedAt: row.gangMoney?.updatedAt ? new Date(row.gangMoney.updatedAt) : null
     },
+    transferSlip: {
+      imageData: row.transferSlip?.imageData || '',
+      uploadedBy: row.transferSlip?.uploadedBy || '',
+      uploadedAt: row.transferSlip?.uploadedAt ? new Date(row.transferSlip.uploadedAt) : null
+    },
     leaveInfo: {
       reason: row.leaveInfo?.reason || '',
       startDate: row.leaveInfo?.startDate ? new Date(row.leaveInfo.startDate) : null,
@@ -56,6 +61,11 @@ function normalizeUserRow(row) {
           amount: Number(this.gangMoney?.amount || 0),
           updatedAt: this.gangMoney?.updatedAt instanceof Date ? this.gangMoney.updatedAt.toISOString() : (this.gangMoney?.updatedAt || null)
         },
+        transferSlip: {
+          imageData: this.transferSlip?.imageData || '',
+          uploadedBy: this.transferSlip?.uploadedBy || '',
+          uploadedAt: this.transferSlip?.uploadedAt instanceof Date ? this.transferSlip.uploadedAt.toISOString() : (this.transferSlip?.uploadedAt || null)
+        },
         leaveInfo: {
           reason: this.leaveInfo?.reason || '',
           startDate: this.leaveInfo?.startDate instanceof Date ? this.leaveInfo.startDate.toISOString() : (this.leaveInfo?.startDate || null),
@@ -85,6 +95,9 @@ function normalizeUpdatePayload(update) {
     else if (key === 'gangMoney.slipStoragePath') normalized.gangMoney = { ...(normalized.gangMoney || {}), slipStoragePath: value };
     else if (key === 'gangMoney.amount') normalized.gangMoney = { ...(normalized.gangMoney || {}), amount: value };
     else if (key === 'gangMoney.updatedAt') normalized.gangMoney = { ...(normalized.gangMoney || {}), updatedAt: value instanceof Date ? value.toISOString() : value };
+    else if (key === 'transferSlip.imageData') normalized.transferSlip = { ...(normalized.transferSlip || {}), imageData: value };
+    else if (key === 'transferSlip.uploadedBy') normalized.transferSlip = { ...(normalized.transferSlip || {}), uploadedBy: value };
+    else if (key === 'transferSlip.uploadedAt') normalized.transferSlip = { ...(normalized.transferSlip || {}), uploadedAt: value instanceof Date ? value.toISOString() : value };
     else if (key === 'leaveInfo.reason') normalized.leaveInfo = { ...(normalized.leaveInfo || {}), reason: value };
     else if (key === 'leaveInfo.startDate') normalized.leaveInfo = { ...(normalized.leaveInfo || {}), startDate: value instanceof Date ? value.toISOString() : value };
     else if (key === 'leaveInfo.endDate') normalized.leaveInfo = { ...(normalized.leaveInfo || {}), endDate: value instanceof Date ? value.toISOString() : value };
@@ -135,6 +148,11 @@ function buildUserInsert(data) {
       slipStoragePath: (data.gangMoney && data.gangMoney.slipStoragePath) || '',
       amount: Number((data.gangMoney && data.gangMoney.amount) || 0),
       updatedAt: (data.gangMoney && data.gangMoney.updatedAt) ? new Date(data.gangMoney.updatedAt).toISOString() : now
+    },
+    transferSlip: {
+      imageData: (data.transferSlip && data.transferSlip.imageData) || '',
+      uploadedBy: (data.transferSlip && data.transferSlip.uploadedBy) || '',
+      uploadedAt: (data.transferSlip && data.transferSlip.uploadedAt) ? new Date(data.transferSlip.uploadedAt).toISOString() : null
     },
     leaveInfo: {
       reason: (data.leaveInfo && data.leaveInfo.reason) || '',
