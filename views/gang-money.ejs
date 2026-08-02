@@ -260,7 +260,7 @@
                   <% if (isOfficerOrLeader) { %>
                     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                       <% if (m.transferSlip?.imageData) { %>
-                        <img src="<%= m.transferSlip.imageData %>" class="slip-img clickable-image" title="คลิกเพื่อดูรูปเต็มขนาด" data-full-src="<%= m.transferSlip.imageData %>">
+                        <img src="<%= m.transferSlip.imageData %>" class="slip-img clickable-image" title="คลิกเพื่อดูรูปเต็มขนาด" data-full-src="<%= m.transferSlip.imageData %>" style="height: 40px; width: auto; border-radius: 4px; cursor: pointer;">
                         <form action="/gang-money/delete-transfer-slip/<%= m.id %>" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('ต้องการลบสลิปรับเงินนี้ไหม')">
                           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                           <button type="submit" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600;"><i class="fa-solid fa-trash"></i></button>
@@ -289,7 +289,7 @@
                     </script>
                   <% } else { %>
                     <% if (m.transferSlip?.imageData) { %>
-                      <img src="<%= m.transferSlip.imageData %>" class="slip-img clickable-image" title="คลิกเพื่อดูรูปเต็มขนาด" data-full-src="<%= m.transferSlip.imageData %>">
+                      <img src="<%= m.transferSlip.imageData %>" class="slip-img clickable-image" title="คลิกเพื่อดูรูปเต็มขนาด" data-full-src="<%= m.transferSlip.imageData %>" style="height: 40px; width: auto; border-radius: 4px; cursor: pointer;">
                     <% } else { %>
                       <span style="color: #666; font-size: 0.85rem;">-</span>
                     <% } %>
