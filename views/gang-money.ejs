@@ -269,14 +269,24 @@
                         <button onclick="toggleTransferSlipForm('<%= m.id %>')" style="background: #9d4edd; color: white; border: none; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; font-weight: 600; white-space: nowrap;"><i class="fa-solid fa-cloud-arrow-up"></i> อัพโหลด</button>
                       <% } %>
                     </div>
-                    <form id="transferSlipForm_<%= m.id %>" action="/gang-money/upload-transfer-slip/<%= m.id %>" method="POST" enctype="multipart/form-data" style="display: none; margin-top: 8px; padding: 8px; background: rgba(157, 78, 221, 0.1); border-radius: 8px;">
+                    <form id="transferSlipForm_<%= m.id %>" action="/gang-money/upload-transfer-slip/<%= m.id %>" method="POST" enctype="multipart/form-data" style="display: none; margin-top: 8px; padding: 10px; background: rgba(157, 78, 221, 0.15); border: 2px solid #9d4edd; border-radius: 8px;">
                       <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                      <div style="display: flex; gap: 6px; align-items: center;">
-                        <input type="file" name="slipImage" accept="image/*" required style="flex: 1; font-size: 0.8rem;">
-                        <button type="submit" style="background: #2ed573; color: white; border: none; padding: 6px 8px; border-radius: 6px; cursor: pointer; font-weight: 600; white-space: nowrap; font-size: 0.8rem;"><i class="fa-solid fa-check"></i> ส่ง</button>
-                        <button type="button" onclick="toggleTransferSlipForm('<%= m.id %>')" style="background: #666; color: white; border: none; padding: 6px 8px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem;"><i class="fa-solid fa-times"></i></button>
+                      <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <label for="slipImage_<%= m.id %>" style="cursor: pointer; padding: 8px 12px; background: #6a0dad; color: white; border-radius: 6px; font-size: 0.85rem; font-weight: 600; white-space: nowrap; border: none;">
+                          <i class="fa-solid fa-folder-open"></i> เลือกรูป
+                        </label>
+                        <input type="file" id="slipImage_<%= m.id %>" name="slipImage" accept="image/*" required style="display: none;">
+                        <span id="fileName_<%= m.id %>" style="color: #c77dff; font-size: 0.8rem; flex: 1;">ยังไม่ได้เลือกรูป</span>
+                        <button type="submit" style="background: #2ed573; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-weight: 600; white-space: nowrap; font-size: 0.8rem;"><i class="fa-solid fa-check"></i> ส่ง</button>
+                        <button type="button" onclick="toggleTransferSlipForm('<%= m.id %>')" style="background: #666; color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8rem;"><i class="fa-solid fa-times"></i> ยกเลิก</button>
                       </div>
                     </form>
+                    <script>
+                      document.getElementById('slipImage_<%= m.id %>').addEventListener('change', function() {
+                        document.getElementById('fileName_<%= m.id %>').textContent = this.files[0] ? '✓ ' + this.files[0].name : 'ยังไม่ได้เลือกรูป';
+                        document.getElementById('fileName_<%= m.id %>').style.color = this.files[0] ? '#2ed573' : '#c77dff';
+                      });
+                    </script>
                   <% } else { %>
                     <% if (m.transferSlip?.imageData) { %>
                       <img src="<%= m.transferSlip.imageData %>" class="slip-img clickable-image" title="คลิกเพื่อดูรูปเต็มขนาด" data-full-src="<%= m.transferSlip.imageData %>">
