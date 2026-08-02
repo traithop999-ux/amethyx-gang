@@ -99,8 +99,14 @@
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { padding: 14px; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 0.92rem; vertical-align: middle; }
     th { color: #a0a0b8; font-weight: 500; }
-    .slip-img { width: 55px; height: 55px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(157, 78, 221, 0.3); transition: 0.2s; }
-    .slip-img:hover { transform: scale(1.08); border-color: #9d4edd; }
+    .slip-img { width: 55px; height: 55px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(157, 78, 221, 0.3); transition: 0.2s; cursor: pointer; }
+    .slip-img:hover { transform: scale(1.08); border-color: #9d4edd; box-shadow: 0 0 12px rgba(157, 78, 221, 0.4); }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; justify-content: center; align-items: center; }
+    .modal.active { display: flex; }
+    .modal-content { position: relative; max-width: 90%; max-height: 90%; }
+    .modal-content img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
+    .modal-close { position: absolute; top: 20px; right: 30px; font-size: 2rem; color: white; cursor: pointer; background: rgba(0,0,0,0.5); width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; }
+    .modal-close:hover { background: rgba(0,0,0,0.8); }
     
     .action-btns { display: flex; gap: 6px; }
     .btn-approve { background: #28a745; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
@@ -228,9 +234,7 @@
                 </td>
                 <td>
                   <% if (m.gangMoney?.slipUrl) { %>
-                    <a href="<%= m.gangMoney.slipUrl %>" target="_blank">
-                      <img src="<%= m.gangMoney.slipUrl %>" class="slip-img" title="กดเพื่อดูรูปใหญ่">
-                    </a>
+                    <img src="<%= m.gangMoney.slipUrl %>" class="slip-img clickable-image" title="คลิกเพื่อดูรูปเต็มขนาด" data-full-src="<%= m.gangMoney.slipUrl %>">
                   <% } else { %>
                     <span style="color: #666; font-size: 0.85rem;">ไม่มีรูป</span>
                   <% } %>
@@ -282,9 +286,51 @@
     </div>
   </div>
 
+  <!-- Image Modal -->
+  <div id="imageModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <img id="modalImage" src="" alt="Full size image">
+    </div>
+  </div>
+
   <canvas id="snowCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0;"></canvas>
 
   <script>
+    // Image Modal Handler
+    function openModal(imageSrc) {
+      const modal = document.getElementById('imageModal');
+      const modalImage = document.getElementById('modalImage');
+      modalImage.src = imageSrc;
+      modal.classList.add('active');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('imageModal');
+      modal.classList.remove('active');
+    }
+
+    // Add click handlers to all clickable images
+    document.querySelectorAll('.clickable-image').forEach(img => {
+      img.addEventListener('click', () => {
+        openModal(img.dataset.fullSrc);
+      });
+    });
+
+    // Close modal when clicking outside the image
+    document.getElementById('imageModal').addEventListener('click', (e) => {
+      if (e.target.id === 'imageModal') {
+        closeModal();
+      }
+    });
+
+    // Close with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    });
+
     function updateFileName(input) {
       const fileNameText = document.getElementById('fileNameText');
       if (!fileNameText) return;

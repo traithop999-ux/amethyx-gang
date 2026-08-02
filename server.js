@@ -547,24 +547,14 @@ app.post('/gang-money/upload', async (req, res) => {
       return res.redirect('/gang-money?error=invalid_amount');
     }
 
-    const originalName = path.basename(req.file.originalname || 'slip');
-    const safeName = originalName.replace(/[^a-zA-Z0-9._-]/g, '_');
-    const storagePath = `gang-slips/${req.user.id}/${Date.now()}-${safeName}`;
-
-    console.log('gang-money upload start', {
-      userId: req.user.id,
-      amount,
-      storagePath,
-      mimeType: req.file.mimetype
-    });
-
-    const uploadResult = await db.uploadFile(req.file.buffer, storagePath, req.file.mimetype);
-    console.log('gang-money upload result', uploadResult);
+    // Convert image to base64 for persistent storage
+    const imageBase64 = req.file.buffer.toString('base64');
+    const imageDataUrl = `data:${req.file.mimetype};base64,${imageBase64}`;
 
     const updatedUser = await User.findByIdAndUpdate(req.user.id, {
       'gangMoney.status': 'pending',
-      'gangMoney.slipUrl': uploadResult.publicUrl,
-      'gangMoney.slipStoragePath': uploadResult.source === 'storage' ? storagePath : '',
+      'gangMoney.slipUrl': imageDataUrl,
+      'gangMoney.slipStoragePath': '',
       'gangMoney.amount': amount,
       'gangMoney.updatedAt': new Date()
     });
